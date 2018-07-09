@@ -9,7 +9,7 @@ lazy val sparkRdd = project
   .settings(commonSettings: _*)
   .settings(
     name := "chronicler-spark-rdd",
-    libraryDependencies ++= Dependencies.chronicler :: Dependencies.sparkDeps
+    libraryDependencies ++= Dependencies.rdd
   )
 
 lazy val sparkDf = project
