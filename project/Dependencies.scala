@@ -8,9 +8,15 @@ object Dependencies {
     chronicler
   )
 
-  val df = List(
+  val ds = List(
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
     "org.apache.spark" %% "spark-sql"  % Versions.spark % Provided,
+    chronicler
+  )
+
+  val streaming = List(
+    "org.apache.spark" %% "spark-core"       % Versions.spark % Provided,
+    "org.apache.spark" %% "spark-streaming"  % Versions.spark % Provided,
     chronicler
   )
 }
