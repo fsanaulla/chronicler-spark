@@ -26,6 +26,7 @@ package object streaming {
 
       val influx = Influx.io(conf)
       val meas = influx.measurement[T](dbName, measName)
+
       stream.foreachRDD { rdd =>
         rdd.foreachPartition { part =>
           part.foreach { t =>
