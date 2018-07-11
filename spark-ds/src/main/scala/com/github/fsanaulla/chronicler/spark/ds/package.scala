@@ -12,7 +12,7 @@ package object ds {
     * @param ds - Spark Dataset of type T
     * @tparam T  - Dataset inner type
     */
-  implicit final class DataFrameOps[T](private val ds: Dataset[T]) extends AnyVal {
+  implicit final class DatasetOps[T](private val ds: Dataset[T]) extends AnyVal {
 
     /**
       * Write Dataset[T] to InfluxDB
