@@ -2,20 +2,20 @@ package com.github.fsanaulla.chronicler.spark
 
 import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxWriter}
 import com.github.fsanaulla.chronicler.urlhttp.Influx
-import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Dataset
 
-package object rdd {
+package object ds {
 
   /**
-    * Extension that will provide static methods for saving RDDs to InfluxDB
+    * Extension that will provide static methods for saving Dataset[T] to InfluxDB
     *
-    * @param rdd - Spark RDD
-    * @tparam T  - RDD inner type
+    * @param ds - Spark Dataset of type T
+    * @tparam T  - Dataset inner type
     */
-  implicit final class RddOps[T](private val rdd: RDD[T]) extends AnyVal {
+  implicit final class DataFrameOps[T](private val ds: Dataset[T]) extends AnyVal {
 
     /**
-      * Write rdd to influxdb
+      * Write Dataset[T] to InfluxDB
       *
       * @param dbName   - influxdb name
       * @param measName - measurement name
@@ -27,9 +27,9 @@ package object rdd {
       val influx = Influx.io(conf)
       val meas = influx.measurement[T](dbName, measName)
 
-      rdd.foreachPartition { p =>
-        p.foreach { e =>
-          meas.write(e)
+      ds.foreachPartition { part =>
+        part.foreach { t =>
+          meas.write(t)
         }
       }
 

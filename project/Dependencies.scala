@@ -7,4 +7,10 @@ object Dependencies {
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
     chronicler
   )
+
+  val df = List(
+    "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
+    "org.apache.spark" %% "spark-sql"  % Versions.spark % Provided,
+    chronicler
+  )
 }

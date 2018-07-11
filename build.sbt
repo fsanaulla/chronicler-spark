@@ -13,9 +13,11 @@ lazy val sparkRdd = project
   )
 
 lazy val sparkDf = project
-  .in(file("spark-df"))
+  .in(file("spark-ds"))
+  .settings(commonSettings: _*)
   .settings(
-    name := "chronicler-spark-dataframe"
+    name := "chronicler-spark-dataset",
+    libraryDependencies ++= Dependencies.df
   )
 
 lazy val sparkStreaming = project
