@@ -1,8 +1,7 @@
-package com.github.fsanaulla.chronicler.spark.rdd
+package com.github.fsanaulla.chronicler.spark.streaming
 
 import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxCredentials, InfluxFormatter}
 import com.github.fsanaulla.chronicler.macros.Macros
-import com.github.fsanaulla.chronicler.spark.streaming._
 import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
 import com.github.fsanaulla.chronicler.urlhttp.Influx
