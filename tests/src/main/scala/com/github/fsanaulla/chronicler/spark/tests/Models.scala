@@ -4,13 +4,16 @@ import com.github.fsanaulla.chronicler.core.model.InfluxWriter
 import com.github.fsanaulla.chronicler.macros.Macros
 import com.github.fsanaulla.chronicler.macros.annotations.{field, tag}
 import com.github.fsanaulla.scalacheck.Arb
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 
 object Models {
 
   final case class Entity(@tag name: String, @field surname: String)
 
   object Entity {
+    implicit val srtArb: Arbitrary[String] = Arbitrary {
+      Gen.alphaStr.filter(_.nonEmpty)
+    }
     val entityArb: Arbitrary[Entity] = Arb.of[Entity]
     val wr: InfluxWriter[Entity] = Macros.writer[Entity]
 

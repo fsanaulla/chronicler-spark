@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val chronicler = "com.github.fsanaulla" %% "chronicler-url-http"    % "0.3.1"
+  val chronicler = "com.github.fsanaulla" %% "chronicler-url-http"    % Versions.chronicler
   val macros     = "com.github.fsanaulla" %% "chronicler-macros"      % Versions.chronicler
   val scalaTest  = "org.scalatest"        %% "scalatest"              % Versions.scalaTest
   val scalaCheck = "org.scalacheck"       %% "scalacheck"             % Versions.scalaCheck
