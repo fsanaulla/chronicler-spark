@@ -35,7 +35,7 @@ object Settings extends LibraryManagementSyntax {
 
 
   val publish = Seq(
-    useGpg := true,
+    useGpg := false,
     scmInfo := Some(
       ScmInfo(
         url("https://github.com/fsanaulla/chronicler-spark"),

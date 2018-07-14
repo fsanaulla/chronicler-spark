@@ -24,5 +24,30 @@ libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-ds" % <versio
 // For DStream
 libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-streaming" % <version>
 ```
+
+## Usage
+
+For `RDD[T]`:
+
+```
+import com.github.fsanaulla.chronicler.spark.rdd._
+
+val rdd: RDD[T] = _
+rdd.saveToInflux("dbName", "measurementName")
+```
+For `Dataset[T]`:
+```
+import com.github.fsanaulla.chronicler.spark.ds._
+
+val ds: Dataset[T] = _
+ds.saveToInflux("dbName", "measurementName")
+```
+For `DStream[T]`:
+```
+import com.github.fsanaulla.chronicler.spark.streaming._
+
+val stream: DStream[T] = _
+stream.saveToInflux("dbName", "measurementName")
+```
 ## Information
 It's compiled over officially supported scala versions by Spark, at the moment it's 2.11.
