@@ -1,5 +1,6 @@
 # Chronicler-spark
 [![Build Status](https://travis-ci.org/fsanaulla/chronicler-spark.svg?branch=master)](https://travis-ci.org/fsanaulla/chronicler-spark)
+[![Join the chat at https://gitter.im/chronicler/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/chronicler-scala/Lobby/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Open-source [InfluxDB](https://www.influxdata.com/) connector for [Apache Spark](https://spark.apache.org/index.html) on top of [Chronicler](https://github.com/fsanaulla/chronicler).
 
