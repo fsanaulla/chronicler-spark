@@ -10,11 +10,11 @@ object Dependencies {
 
   val core: List[ModuleID] = List(
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
-    sparkTests % IntegrationTest,
-    scalaTest  % IntegrationTest,
-    macros     % IntegrationTest,
-    scalaCheck % IntegrationTest,
-    generators % IntegrationTest,
+    sparkTests % Test,
+    scalaTest  % Test,
+    macros     % Test,
+    scalaCheck % Test,
+    generators % Test,
     chronicler
   )
 

@@ -4,8 +4,6 @@ lazy val headerSettings = headerLicense := Some(License.ALv2("2018", "Faiaz Sana
 
 lazy val sparkRdd = project
   .in(file("spark-rdd"))
-  .configs(IntegrationTest)
-  .settings(Defaults.itSettings)
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
@@ -17,8 +15,6 @@ lazy val sparkRdd = project
 
 lazy val sparkDs = project
   .in(file("spark-ds"))
-  .configs(IntegrationTest)
-  .settings(Defaults.itSettings)
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
@@ -30,8 +26,6 @@ lazy val sparkDs = project
 
 lazy val sparkStreaming = project
   .in(file("spark-streaming"))
-  .configs(IntegrationTest)
-  .settings(Defaults.itSettings)
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
