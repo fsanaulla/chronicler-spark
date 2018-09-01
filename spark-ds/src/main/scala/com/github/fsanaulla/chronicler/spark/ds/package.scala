@@ -29,7 +29,7 @@ package object ds {
     * Extension that will provide static methods for saving Dataset[T] to InfluxDB
     *
     * @param ds - Spark Dataset of type T
-    * @tparam T  - Dataset inner type
+    * @tparam T - Dataset inner type
     */
   implicit final class DatasetOps[T](private val ds: Dataset[T]) extends AnyVal {
 
@@ -46,8 +46,6 @@ package object ds {
                      precision: Precision = Precisions.NANOSECONDS,
                      retentionPolicy: Option[String] = None)
                     (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-
-
       ds.foreachPartition { partition =>
 
         val influx = Influx.io(conf)

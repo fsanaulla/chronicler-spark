@@ -1,4 +1,4 @@
-# Chronicler-spark
+# chronicler-spark
 [![Build Status](https://travis-ci.org/fsanaulla/chronicler-spark.svg?branch=master)](https://travis-ci.org/fsanaulla/chronicler-spark)
 [![Join the chat at https://gitter.im/chronicler/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/chronicler-scala/Lobby/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -8,8 +8,9 @@ Open-source [InfluxDB](https://www.influxdata.com/) connector for [Apache Spark]
 | Module | Description | Version |
 | ------------- | ------------- | ---------- |
 | `chronicler-spark-rdd` | Spark RDD's extensions | [![Latest version](https://index.scala-lang.org/fsanaulla/chronicler-spark/chronicler-spark-rdd/latest.svg?color=yellow)](https://index.scala-lang.org/com.github.fsanaulla/chronicler-spark/chronicler-spark-rdd_2.11) |
-| `chronicler-spark-dataset` | Spark Dataset's extension| [![Latest version](https://index.scala-lang.org/fsanaulla/chronicler/chronicler-spark-ds/latest.svg?color=yellow)](https://index.scala-lang.org/com.github.fsanaulla/chronicler-spark/chronicler-spark-ds_2.11) |
-| `chronicler-spark-streaming` | Spark DStream's extension | [![Latest version](https://index.scala-lang.org/fsanaulla/chronicler/chronicler-spark-streaming/latest.svg?color=yellow)](https://index.scala-lang.org/com.github.fsanaulla/chronicler-spark/chronicler-spark-streaming_2.11) |
+| `chronicler-spark-dataset` | Spark Dataset's extension| [![Latest version](https://index.scala-lang.org/fsanaulla/chronicler-spark/chronicler-spark-ds/latest.svg?color=yellow)](https://index.scala-lang.org/com.github.fsanaulla/chronicler-spark/chronicler-spark-ds_2.11) |
+| `chronicler-spark-structured-streaming` | Spark structured streaming extension| [![Latest version](https://index.scala-lang.org/fsanaulla/chronicler-spark/chronicler-spark-structured-streaming/latest.svg?color=yellow)](https://index.scala-lang.org/com.github.fsanaulla/chronicler-spark/chronicler-spark-structured-streaming_2.11) |
+| `chronicler-spark-streaming` | Spark DStream's extension | [![Latest version](https://index.scala-lang.org/fsanaulla/chronicler-spark/chronicler-spark-streaming/latest.svg?color=yellow)](https://index.scala-lang.org/com.github.fsanaulla/chronicler-spark/chronicler-spark-streaming_2.11) |
 
 ## Get Started
 
@@ -21,6 +22,9 @@ libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-rdd" % <versi
 
 // For Dataset
 libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-ds" % <version>
+
+// For Structured Streaming
+libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-structured-streaming" % <version>
 
 // For DStream
 libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-streaming" % <version>
@@ -43,6 +47,17 @@ import com.github.fsanaulla.chronicler.spark.ds._
 val ds: Dataset[T] = _
 ds.saveToInflux("dbName", "measurementName")
 ```
+For `DataStreamWriter[T]`
+```
+import com.github.fsanaulla.chronicler.spark.structured.streaming._
+
+val structStream: DataStreamWriter[T] = _
+val saved = structStream.saveToInflux("dbName", "measurementName")
+..
+saved.start().awaitTermination()
+
+```
+
 For `DStream[T]`:
 ```
 import com.github.fsanaulla.chronicler.spark.streaming._
