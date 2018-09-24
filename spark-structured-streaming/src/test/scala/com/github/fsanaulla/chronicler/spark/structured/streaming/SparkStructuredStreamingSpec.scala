@@ -1,5 +1,6 @@
 package com.github.fsanaulla.chronicler.spark.structured.streaming
 
+import com.github.fsanaulla.chronicler.core.enums.Consistencies
 import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.spark.tests.DockerizedInfluxDB
 import com.github.fsanaulla.chronicler.urlhttp.Influx
@@ -60,7 +61,7 @@ class SparkStructuredStreamingSpec
         .schema(schema)
         .csv(getClass.getResource("/structured/").getPath)
         .writeStream
-        .saveToInflux(dbName, meas)
+        .saveToInflux(dbName, meas, Consistencies.ONE)
         .start()
         .awaitTermination(1000 * 10)
 
