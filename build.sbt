@@ -12,6 +12,7 @@ lazy val sparkRdd = project
     version := "0.1.1",
     libraryDependencies ++= Dependencies.core
   )
+  .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkDs = project
@@ -24,6 +25,7 @@ lazy val sparkDs = project
     version := "0.1.1",
     libraryDependencies ++= Dependencies.ds
   )
+  .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkStreaming = project
@@ -36,6 +38,7 @@ lazy val sparkStreaming = project
     version := "0.1.1",
     libraryDependencies ++= Dependencies.streaming
   )
+  .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkStructuredStreaming = project
@@ -48,13 +51,13 @@ lazy val sparkStructuredStreaming = project
     version := "0.1.0",
     libraryDependencies ++= Dependencies.ds
   )
+  .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val tests = project
-  .in(file("tests"))
+  .in(file("testing"))
   .settings(Settings.common: _*)
   .settings(
-    name := "chronicler-spark-tests",
-    version := "1.0.0",
+    name := "chronicler-spark-testing",
     libraryDependencies ++= Dependencies.itTesting
   )

@@ -17,5 +17,4 @@ services:
   - docker
 
 script:
-  - sbt tests/publishLocal
-  - sbt rddTest dsTest streamingTest
+  - sbt rddTest dsTest streamingTest structuredTest

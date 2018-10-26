@@ -11,10 +11,9 @@ object Models {
   final case class Entity(@tag name: String, @field surname: String)
 
   object Entity {
-    implicit val srtArb: Arbitrary[String] = Arbitrary {
-      Gen.alphaStr.filter(_.nonEmpty)
-    }
-    val entityArb: Arbitrary[Entity] = Arb.of[Entity]
+    implicit val srtArb: Arbitrary[String] = Arbitrary(Gen.alphaStr.filter(_.nonEmpty))
+
+    val entityArb: Arbitrary[Entity] = Arb.dummy[Entity]
     val wr: InfluxWriter[Entity] = Macros.writer[Entity]
 
     def samples(count: Int = 20): Seq[Entity] = {
@@ -32,5 +31,4 @@ object Models {
       samplesRec(Nil, 0)
     }
   }
-
 }

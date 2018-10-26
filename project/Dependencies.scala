@@ -5,12 +5,12 @@ object Dependencies {
   val macros     = "com.github.fsanaulla" %% "chronicler-macros"      % Versions.chronicler
   val scalaTest  = "org.scalatest"        %% "scalatest"              % Versions.scalaTest
   val scalaCheck = "org.scalacheck"       %% "scalacheck"             % Versions.scalaCheck
-  val sparkTests = "com.github.fsanaulla" %% "chronicler-spark-tests" % "1.0.0" // local dependencies
-  val generators = "com.github.fsanaulla" %% "scalacheck-generators"  % "0.1.3"
+//  val sparkTests = "com.github.fsanaulla" %% "chronicler-spark-tests" % "1.0.0" // local dependencies
+  val generators = "com.github.fsanaulla" %% "scalacheck-generators"  % "0.2.0"
 
   val core: List[ModuleID] = List(
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
-    sparkTests % Test,
+//    sparkTests % Test,
     scalaTest  % Test,
     macros     % Test,
     scalaCheck % Test,
@@ -27,10 +27,10 @@ object Dependencies {
   val itTesting: Seq[ModuleID] = Seq(
     "org.jetbrains"        %  "annotations" % "15.0", // to solve evicted warning
     "org.testcontainers"   %  "influxdb"    % "1.7.3" exclude("org.jetbrains", "annotations"),
-    scalaCheck % Provided,
-    scalaTest  % Provided,
-    generators % Provided,
-    macros     % Provided
+    scalaCheck,
+    scalaTest,
+    generators,
+    macros
   )
 
 }

@@ -40,7 +40,7 @@ class SparkDatasetSpec
   }
 
   it should "save rdd to InfluxDB" in {
-    Models.Entity.samples(20)
+    Models.Entity.samples()
       .toDS()
       .saveToInflux(dbName, meas)
   }
