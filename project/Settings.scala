@@ -15,13 +15,14 @@ object Settings extends LibraryManagementSyntax {
   }
 
   val common = Seq(
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.12.7",
     organization := "com.github.fsanaulla",
     scalacOptions ++= Seq(
       "-deprecation",
       "-feature",
       "-encoding", "utf-8"
     ),
+    crossScalaVersions := Seq("2.11.8", scalaVersion.value),
     homepage := Some(url("https://github.com/fsanaulla/chronicler-spark")),
     licenses += "Apache-2.0" -> url(apacheUrl),
     developers += Developer(

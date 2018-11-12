@@ -1,20 +1,20 @@
 language: scala
+sudo: required
 
 scala:
   - 2.11.8
+  - 2.12.7
 
 jdk:
   - oraclejdk8
 
-sudo: required
-
 cache:
   directories:
-    - "$HOME/.ivy2/cache"
-    - "$HOME/.sbt/boot"
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot"
 
 services:
   - docker
 
 script:
-  - sbt rddTest dsTest streamingTest structuredTest
+  - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest

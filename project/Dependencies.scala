@@ -1,16 +1,22 @@
 import sbt._
 
 object Dependencies {
+  
+  object Versions {
+    val chronicler = "0.3.3"
+    val spark      = "2.4.0"
+    val scalaTest  = "3.0.5"
+    val scalaCheck = "1.14.0"
+  }
+  
   val chronicler = "com.github.fsanaulla" %% "chronicler-url-http"    % Versions.chronicler
   val macros     = "com.github.fsanaulla" %% "chronicler-macros"      % Versions.chronicler
   val scalaTest  = "org.scalatest"        %% "scalatest"              % Versions.scalaTest
   val scalaCheck = "org.scalacheck"       %% "scalacheck"             % Versions.scalaCheck
-//  val sparkTests = "com.github.fsanaulla" %% "chronicler-spark-tests" % "1.0.0" // local dependencies
   val generators = "com.github.fsanaulla" %% "scalacheck-generators"  % "0.2.0"
 
   val core: List[ModuleID] = List(
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
-//    sparkTests % Test,
     scalaTest  % Test,
     macros     % Test,
     scalaCheck % Test,
