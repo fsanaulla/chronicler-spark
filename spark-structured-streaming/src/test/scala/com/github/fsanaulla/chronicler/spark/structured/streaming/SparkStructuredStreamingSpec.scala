@@ -1,9 +1,10 @@
 package com.github.fsanaulla.chronicler.spark.structured.streaming
 
-import com.github.fsanaulla.chronicler.core.enums.Consistencies
-import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxCredentials, InfluxWriter}
+import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.spark.tests.DockerizedInfluxDB
-import com.github.fsanaulla.chronicler.urlhttp.Influx
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
+import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SparkSession}
@@ -12,9 +13,9 @@ import org.scalatest.{FlatSpec, Matchers, TryValues}
 
 class SparkStructuredStreamingSpec
   extends FlatSpec
-  with Matchers
-  with DockerizedInfluxDB
-  with TryValues {
+    with Matchers
+    with DockerizedInfluxDB
+    with TryValues {
 
     val conf: SparkConf = new SparkConf()
       .setAppName("ss")
@@ -29,7 +30,7 @@ class SparkStructuredStreamingSpec
     val meas = "meas"
 
     implicit lazy val influxConf: InfluxConfig =
-      InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false)
+      InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
     implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
       override def write(obj: Row): String = {
         val sb = StringBuilder.newBuilder
@@ -46,7 +47,7 @@ class SparkStructuredStreamingSpec
     }
 
     "Influx" should "create database" in {
-      val management = Influx.management(influxConf)
+      val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
       management.createDatabase(dbName).success.value.isSuccess shouldEqual true
       management.close()
     }
@@ -61,7 +62,7 @@ class SparkStructuredStreamingSpec
         .schema(schema)
         .csv(getClass.getResource("/structured/").getPath)
         .writeStream
-        .saveToInflux(dbName, meas, Consistencies.ONE)
+        .saveToInfluxDB(dbName, meas)
         .start()
         .awaitTermination(1000 * 10)
 
@@ -69,7 +70,7 @@ class SparkStructuredStreamingSpec
     }
 
     it should "retrieve saved items" in {
-      val influx = Influx.io(influxConf)
+      val influx = InfluxIO(influxConf)
       val db = influx.database(dbName)
 
       db.readJs(s"SELECT * FROM $meas")

@@ -1,10 +1,12 @@
 package com.github.fsanaulla.chronicler.spark.streaming
 
-import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxCredentials, InfluxFormatter}
-import com.github.fsanaulla.chronicler.macros.Macros
+import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxFormatter}
+import com.github.fsanaulla.chronicler.macros.Influx
 import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
-import com.github.fsanaulla.chronicler.urlhttp.Influx
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
+import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
@@ -28,22 +30,22 @@ class SparkStreamingSpec
   val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false)
-  implicit val wr: InfluxFormatter[Entity] = Macros.format[Entity]
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
+  implicit val wr: InfluxFormatter[Entity] = Influx.formatter[Entity]
 
   "Influx" should "create database" in {
-    val management = Influx.management(influxConf)
+    val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
     management.createDatabase(dbName).success.value.isSuccess shouldEqual true
     management.close()
   }
 
   it should "save rdd to InfluxDB" in {
-    val rdd = sc.parallelize(Models.Entity.samples(20))
+    val rdd = sc.parallelize(Models.Entity.samples())
 
     // define stream
     ssc
       .queueStream(mutable.Queue(rdd))
-      .saveToInflux(dbName, meas)
+      .saveToInfluxDB(dbName, meas)
 
     ssc.start()
 
@@ -54,7 +56,7 @@ class SparkStreamingSpec
   }
 
   it should "retrieve saved items" in {
-    val influx = Influx.io(influxConf)
+    val influx = InfluxIO(influxConf)
     val db = influx.database(dbName)
 
     db.readJs(s"SELECT * FROM $meas")

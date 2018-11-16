@@ -1,7 +1,7 @@
 package com.github.fsanaulla.chronicler.spark.tests
 
 import com.github.fsanaulla.chronicler.core.model.InfluxWriter
-import com.github.fsanaulla.chronicler.macros.Macros
+import com.github.fsanaulla.chronicler.macros.Influx
 import com.github.fsanaulla.chronicler.macros.annotations.{field, tag}
 import com.github.fsanaulla.scalacheck.Arb
 import org.scalacheck.{Arbitrary, Gen}
@@ -14,7 +14,7 @@ object Models {
     implicit val srtArb: Arbitrary[String] = Arbitrary(Gen.alphaStr.filter(_.nonEmpty))
 
     val entityArb: Arbitrary[Entity] = Arb.dummy[Entity]
-    val wr: InfluxWriter[Entity] = Macros.writer[Entity]
+    val wr: InfluxWriter[Entity] = Influx.writer[Entity]
 
     def samples(count: Int = 20): Seq[Entity] = {
 
