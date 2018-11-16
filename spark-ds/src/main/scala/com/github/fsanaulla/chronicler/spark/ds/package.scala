@@ -24,6 +24,7 @@ import org.apache.spark.sql.Dataset
 import resource._
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success}
 
 package object ds {
 
@@ -58,7 +59,11 @@ package object ds {
       ds.foreachPartition { partition =>
         managed(InfluxIO(conf)) map { cl =>
           val meas = cl.measurement[T](dbName, measName)
-          partition.foreach(meas.write(_, consistency, precision, retentionPolicy).fold(onFailure, onSuccess))
+          partition.foreach(
+            meas.write(_, consistency, precision, retentionPolicy) match {
+              case Success(value) => onSuccess(value)
+              case Failure(ex)    => onFailure(ex)
+          })
         }
       }
     }

@@ -31,7 +31,6 @@ object Settings extends LibraryManagementSyntax {
       email = Owner.email,
       url = url(Owner.github)
     ),
-    publishArtifact in IntegrationTest := false
   )
 
 

@@ -24,6 +24,7 @@ import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import org.apache.spark.sql.ForeachWriter
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success}
 
 /**
   * Influx foreach writer for structured streaming
@@ -52,9 +53,10 @@ private[streaming] final class InfluxForeachWriter[T: ClassTag](dbName: String,
   }
 
   override def process(value: T): Unit =
-    meas
-      .write(value, consistency, precision, retentionPolicy)
-      .fold(onFailure, onSuccess)
+    meas.write(value, consistency, precision, retentionPolicy) match {
+      case Success(v)  => onSuccess(v)
+      case Failure(ex) => onFailure(ex)
+    }
 
   override def close(errorOrNull: Throwable): Unit =
     influx.close()
