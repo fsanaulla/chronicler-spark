@@ -1,38 +1,31 @@
 language: scala
 sudo: required
-
 scala:
-  - 2.11.8
-  - 2.12.7
-
+- 2.11.8
+- 2.12.7
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 services:
-  - docker
-
+- docker
 cache:
   directories:
   - "$HOME/.ivy2/cache"
   - "$HOME/.sbt/boot"
-
 before_install:
-  - |
-    if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
-      openssl aes-256-cbc -K $encrypted_56e8fc46d7cd_key -iv $encrypted_56e8fc46d7cd_iv -in secrets.tar.enc -out secrets.tar -d
-      tar xvf secrets.tar
-    fi
-
+- |
+  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    openssl aes-256-cbc -K $encrypted_56e8fc46d7cd_key -iv $encrypted_56e8fc46d7cd_iv -in secrets.tar.enc -out secrets.tar -d
+    tar xvf secrets.tar
+  fi
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
-
+- sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
 after_success:
-  - |
-    if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
-      sbt ++${TRAVIS_SCALA_VERSION} rddPublish dsPublish streamingPublish structuredPublish
-    fi
+- |
+  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
+    sbt ++${TRAVIS_SCALA_VERSION} rddPublish dsPublish streamingPublish structuredPublish
+  fi
 env:
   global:
-  - secure: c/NbnYqUa4KNZBANOOTwwntx05vwOHSkenysw2xkPs4u7QHbaMHMXwwKPWSPoFpJ0UKxbRhCfoUCltVo1AvemQFWSq1da4kfSThUY1ZfrnWP264R/IOb+5TYYLrEX5gx9PWj1BNQJhjsoWW4zjNlAXN6ussaz/2luKv8qy2Jc58GCyS3ifZGMnjg34l13t2Zrtjx5yYlhJTa9Yg7vNXSFIq8AKo3r2MDjdvOgCKbAv4PNPr5DXelejjAFNe3pHNBw92d3wqhmuKgPMKSezTtV2hXE0Y4dYlSoVEN+Shg0aHNripR2Nf9OND1cXOcnZ0PlKA5+Os+RBY2OmJZ5DUeujshSdMHpDvhjWh1xCnsnp96xepoFZkw0WsNQhn6K+OoZh5Dv23ul6ZUFs/ipKjLJonyC7E7t4ZGcIa4io6sqg2/oCcXudLe23JMVwQFy39A9kPpm1PTwzi5X7ble1EvDT+AVgAu9+wUXPW+wMpbXXY19bYaDqO/P7ftUTatTRgU861dEX6mkswWqRksDsJwX9vqAn++FgUbWCEI+Mm48oOhjhs7zKQHQrX+lOnoHZaMbkLiwz8XGVDJaC2+39H7TrSzJlijg/Eza0UpE6GCrADxmVK1R1ZCVeWCy3Q9Axd6RJMePS63KoEjRBdbUu3k4mSUizzyakd/U//3Epyfsak=
-  - secure: aNqIbcjOdKrqE+90m9ojmI1Ybgiax+F5OKUr4rwDgnmoQWCVk6shN0okTROguEkcP6peO/iDKKPIbKzYsJm5u+BYVHhUMCpB10X0UtPvtQa/Mddam0qe8m3YONnMzEIYj/9DlVITCpdIDNdU/TjfEhuu8KaaJtvfroRKIgRDWTav1Wti9b9l573JVRpoRmMzTydLGvJtjyHiTCXWJXojWMwuUffI0Q6sFEav6KisBK3WL4WeRJIpno+KFJm4WAZqEuU8KuueFA5RL+adKMvbfYEtR7yi4KhSKPevQRH38xSuD+Ajc7QYuHYsR42bAckCfTjhNZVHZTCxXhlfw+br1krdzc9y9RXodvKWg9VWx345UEYaWq3dw17MaHwnzEAchFQYAKaQLK/EwbwDfLmYDKn0OEUTpmp2BGYvq/VHtRrSgBIpaURxqv0oZJZK8jZ/RXpchwk12YUJ+i00Zvx/iTk9BfTk85jtaglw8NFYqfmy/UCJVRQSCGKzEmUl7MG1LpqTTJTPigDiSMoKCGa8Oai+WF9diFHaA2ZP1DkdM3pmQsMerClKRl4iWKUCdo9BeFWXQNHZO1jHu9Mfnkf7+HfLyQEs9cJy/fw2XxJlFhmI41ITKlxCP4ovveB+LitOeFDiLmxPLD9LQ2Dc9SQHMQZtIjcPs9gV+S84nRxRB+k=
-  - secure: jjUhAbCxdrt7+BDVNknG5nt15MzFfqMTa/Nqw2ziHc0U/R0Ogn0c0BHZxJqi2lcS0n8GtuPDKpzdTEJz9twYOoR/B7wo5a+VCwoPGZKpG8SRvuBfyYe3eqrxD72hvKLOKkAhqbpgIbCMNL0vAokS/y44sfBkwjHmXCwIxHa+boYEsqFwcuu7wQmX2GRtlwZbkF/QLEURTsREv6UeBAq/TuFWi5gHSQz/YRhcyh4ds9EzLPxKWmMRzrUf01Em3QzYCU4YdeS5VNtsipflh5GuS2jF0DZrCGLUhkGGe6+rslApe6xdGjCswcIjW9IDQP0PahckvlfGALGQVlmdnd+VowXMacl8WLBtq9nGs6ad5DLCvvXlbHQfVp6IQj6cauzler39Ufmb1tN6/EDqsSO2bwmVA1cfbkHqRrcvAvHHg5PRLHQ49GC5WklRwHj3t2ShIq8Hu5UiYwTvQtVcNkcgpU5RhMHp4PrxmLsK3ZuNWyAIdnpiRDdFRfFNkDNy9+mWgeps03enDPcxyi4Rn8bmj44lkeU4q/5cxyJT3aftFaHahe7Zw9uy/ymq5zRUH8MXLcL1+e9hEy6VSISQDZE9Ptwnru7UQVX2Z5gpOHvTEkpJmd8dY+hSICHaHpmqlLIAM55pbFUUP7S0Tk18OtsmrTjhnjOBhR684wufmcZMq9I=
+  - secure: o7yWIqfBDp55nVhOE9HR+V1bYtRJngr1Qc0aR3W9nLIhnMcQLCLRRiOQByTklgky+h+oq8PaNJOPL6IgIgw1/J0xsp6HVIet0VLDolWeKUgFLNbi+ZqfBwI1FMu1XmJTLxEF6OAjAErLV3FSi8DEx2cl+3FpKIFRR1Lcl26/mWkmcco67WOgZkerRi6RRhJlsloTD9wB9SHQjNV09z67vbAos/vUslQovuu/z7VsOk5wkJLzHEnXyMUAdhh3DqL/MVtlvgwIrt/nIllg7iORsluzlOmCo+TFh9UmkTN9gbwDR9fx/griryl78feflz5yFRRmgXiwaYEcGF5PwEc80MJpMldYPuCWO+qfPcF+0ULnoxaw53NWNBt6ASriUnqBzcQRcA5H2Ekxe6v6RCJXjIkO/Xrq6QF+DCFCfYnUYfaHdKD+rwX1XwiTeHN3cWOSi5b6XiuajLQBTU/8SHWRG5AfGdHKg20f/Cq8+1xxtldJ/GSOim2yOgiEKP6gQOvky7e0euv5XTqOwgWTotyuFe5q5xixP8l0rK0TrShWz+CMQBdJSnyesKAhiZFI+B8C5B7adrYLxMOiD2CKDzLibXxlikUvnCXLymF666McY+dBmbWza1lT55GV/4FqNYWd+vxDeVtP9ghPJGl9ffmuo3GoK9igt3EKDMUW5jn5Otc=
+  - secure: dcdLS5/dDJRkmvc4oZFxSnckjlHkQs1g1bvdNVgabazWimNvxRs4h/JJQH/+w2XaNtjfDy24E0g8SOegGcXH1lLF7CTf4EksUH7ODeDlaK5yX2RMWBOgAvVgwSo1RmJpiIvadVx2TqMct4Km1ZMhB+dBfWo82keVLduUE4M+kyhE7DBkF4Be4HCT/FX2qtuvIzWT0fwxVw2QjxRo4jWhUoTCMyG5b4vgn+cknIDdg3p3KXrymmPqgccFwOtFHjqzUtMKqjsEmBwMQ1Sp19HyLi0+wekPL5u1ngxqhhbutnyz9kHV2iZDFmgIhkHNADG/1anAgdF6gu4QghixPxllMJLw5rzMeA2bH7w1WiNmy8UU32wNg3vKWuiqC0TqwqGz2j2G092caji6vZn7vYr/06R3HN2TLv+ZaqQ1BENa4BS0aEHSguCtjRQpdGCyYkjXYYK8C+6LxXSBMXlJjH67laYopdN65/dT/ZmyWO10sgK2dgxTxkAcdArt7lTkt87BFzz+9Nb58cDuH12/Z6Nm6stIDxO/afPVRL6pW8tD6qZidkNM1vf8mjSpAAY5hbRyBC/7SoWIR7LB3ADTAOSkIJ0tJiSfbXOangWyW++gMOMnXcpKSRkb8LBnvqsz1FBM3n0LXp6IhEz4m5efLqya7eXq2Ta77di4kDG1XZTbUXM=
+  - secure: Sh/RPYvj3bYbIAYokxOgceZ7TYZmWgtWkhYKehw9vy4G7VH0HXdGiITl7I/lkgqKmR6uFG6hZASMcTyv3wQbKa3wkN9B9shyWuDAfWHgx+PYO+GmZvXem8M54Ll90X2AQxKMKJDiHdZGtGAcKcdlTCLC5KuvQ9hL2YGq3CkX3kicl0804WJPeOjUstxOXTbzUAt3EQxIViJtGqa0JtnovneRIAuOU9tdNTJW3lG5mPdOIFKB+6MdvaXJWXh/hOptHZxiOeVv3NjU9uG5IL17qdQ9IwmVrVJpZyRqlCcSqOB+GN/asKCjSLOQ9D+0wpLLWMwEYhurMUTVvI0LLN7N1JvBT114FtWpAAIilxwO2UCyasDsSc4tQMkzb/XyKXzFVwUTPp6NOYaCg0Z9+MDPZ+V5+QRtTLMaTvkD7JSODdFckcI+bXcSPwD/LIKBbAhhhmxQ+yr/nFGzo5kBPgShI5JFlboZQc3Cs/hiAU30tW7gpTVx+00BGYaQB3JIKs+0JZkKda/GCpo3Re0TSDv7BMHzmOV/W/lvtLJWmnPe/k+EOGjDEa6WSkjbbtvKBdEIfhzm/q1SjlG+mkzn1YD+1Ytze6X+q6Jbc0llH0diyY9A6o1Epxlf14HNDiTMMyOQX4RrMHiWQYkh1BWOaZwUy7KOCYUei3A4BwaebfvXPPE=
