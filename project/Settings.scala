@@ -1,7 +1,7 @@
-import com.typesafe.sbt.SbtPgp.autoImportImpl.useGpg
+import com.typesafe.sbt.SbtPgp.autoImportImpl.{pgpPassphrase, pgpPublicRing, pgpSecretRing, useGpg}
 import sbt.Keys._
 import sbt.librarymanagement.{Developer, LibraryManagementSyntax, ScmInfo}
-import sbt.{Opts, url}
+import sbt.{Opts, file, url}
 
 object Settings extends LibraryManagementSyntax {
 
@@ -48,6 +48,9 @@ object Settings extends LibraryManagementSyntax {
         Opts.resolver.sonatypeSnapshots
       else
         Opts.resolver.sonatypeStaging
-    )
+    ),
+    pgpPublicRing := file("pubring.asc"),
+    pgpSecretRing := file("secring.asc"),
+    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
   )
 }
