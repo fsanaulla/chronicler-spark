@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Faiaz Sanaulla
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.github.fsanaulla.chronicler.spark.streaming
 
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxFormatter}
@@ -9,7 +25,9 @@ import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
+import resource._
 
 import scala.collection.mutable
 
@@ -17,6 +35,8 @@ class SparkStreamingSpec
   extends FlatSpec
     with Matchers
     with DockerizedInfluxDB
+    with Eventually
+    with IntegrationPatience
     with TryValues {
 
   val conf: SparkConf = new SparkConf()
@@ -34,9 +54,9 @@ class SparkStreamingSpec
   implicit val wr: InfluxFormatter[Entity] = Influx.formatter[Entity]
 
   "Influx" should "create database" in {
-    val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
-    management.createDatabase(dbName).success.value.isSuccess shouldEqual true
-    management.close()
+    managed(InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)) map { cl =>
+      cl.createDatabase(dbName).success.value.isSuccess shouldEqual true
+    }
   }
 
   it should "save rdd to InfluxDB" in {
@@ -56,15 +76,10 @@ class SparkStreamingSpec
   }
 
   it should "retrieve saved items" in {
-    val influx = InfluxIO(influxConf)
-    val db = influx.database(dbName)
-
-    db.readJs(s"SELECT * FROM $meas")
-      .success
-      .value
-      .queryResult
-      .length shouldEqual 20
-
-    influx.close()
+    managed(InfluxIO(influxConf)) map { cl =>
+      eventually {
+        cl.database(dbName).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 20
+      }
+    }
   }
 }

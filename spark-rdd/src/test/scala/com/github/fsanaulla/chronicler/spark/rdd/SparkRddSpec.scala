@@ -24,12 +24,15 @@ import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
 import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import org.apache.spark.{SparkConf, SparkContext}
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
 import resource._
 
 class SparkRddSpec
   extends FlatSpec
     with Matchers
+    with Eventually
+    with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues {
 
@@ -37,7 +40,8 @@ class SparkRddSpec
     .setAppName("Rdd")
     .setMaster("local[*]")
   val sc: SparkContext = new SparkContext(conf)
-  val influxDbName = "db"
+  val dbName = "db"
+  val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
@@ -45,26 +49,22 @@ class SparkRddSpec
 
   "Influx" should "create database" in {
     managed(InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)) map { cl =>
-      cl.createDatabase(influxDbName).success.value.isSuccess shouldEqual true
+      cl.createDatabase(dbName).success.value.isSuccess shouldEqual true
     }
   }
 
   it should "save rdd to InfluxDB" in {
     sc
       .parallelize(Models.Entity.samples())
-      .saveToInfluxDB("db", "meas")
+      .saveToInfluxDB(dbName, meas)
       .shouldEqual {}
   }
 
   it should "retrieve saved items" in {
     managed(InfluxIO(influxConf)) map { cl =>
-      val db = cl.database(influxDbName)
-
-      db.readJs("SELECT * FROM meas")
-        .success
-        .value
-        .queryResult
-        .length shouldEqual 20
+      eventually {
+        cl.database(dbName).readJs("SELECT * FROM meas").success.value.queryResult.length shouldEqual 20
+      }
     }
   }
 }
