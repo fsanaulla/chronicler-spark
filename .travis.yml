@@ -19,8 +19,8 @@ cache:
 before_install:
   - |
     if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
-      openssl aes-256-cbc -K ${encrypted_56e8fc46d7cd_key} -iv ${encrypted_56e8fc46d7cd_iv} -in secring.asc.enc -out secring.asc -d
-      openssl aes-256-cbc -K ${encrypted_56e8fc46d7cd_key} -iv ${encrypted_56e8fc46d7cd_iv} -in pubring.asc.enc -out pubring.asc -d
+      openssl aes-256-cbc -K $encrypted_56e8fc46d7cd_key -iv $encrypted_56e8fc46d7cd_iv -in secrets.tar.enc -out secrets.tar -d
+      tar xvf secrets.tar
     fi
 
 script:
@@ -28,10 +28,9 @@ script:
 
 after_success:
   - |
-    if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
+    if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
       sbt ++${TRAVIS_SCALA_VERSION} rddPublish dsPublish streamingPublish structuredPublish
     fi
-
 env:
   global:
   - secure: c/NbnYqUa4KNZBANOOTwwntx05vwOHSkenysw2xkPs4u7QHbaMHMXwwKPWSPoFpJ0UKxbRhCfoUCltVo1AvemQFWSq1da4kfSThUY1ZfrnWP264R/IOb+5TYYLrEX5gx9PWj1BNQJhjsoWW4zjNlAXN6ussaz/2luKv8qy2Jc58GCyS3ifZGMnjg34l13t2Zrtjx5yYlhJTa9Yg7vNXSFIq8AKo3r2MDjdvOgCKbAv4PNPr5DXelejjAFNe3pHNBw92d3wqhmuKgPMKSezTtV2hXE0Y4dYlSoVEN+Shg0aHNripR2Nf9OND1cXOcnZ0PlKA5+Os+RBY2OmJZ5DUeujshSdMHpDvhjWh1xCnsnp96xepoFZkw0WsNQhn6K+OoZh5Dv23ul6ZUFs/ipKjLJonyC7E7t4ZGcIa4io6sqg2/oCcXudLe23JMVwQFy39A9kPpm1PTwzi5X7ble1EvDT+AVgAu9+wUXPW+wMpbXXY19bYaDqO/P7ftUTatTRgU861dEX6mkswWqRksDsJwX9vqAn++FgUbWCEI+Mm48oOhjhs7zKQHQrX+lOnoHZaMbkLiwz8XGVDJaC2+39H7TrSzJlijg/Eza0UpE6GCrADxmVK1R1ZCVeWCy3Q9Axd6RJMePS63KoEjRBdbUu3k4mSUizzyakd/U//3Epyfsak=
