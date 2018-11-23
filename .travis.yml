@@ -17,15 +17,20 @@ cache:
   - "$HOME/.sbt/boot"
 
 before_install:
-- if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
-  decrypt-keys.sh; fi
+  - |
+    if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
+      openssl aes-256-cbc -K ${encrypted_56e8fc46d7cd_key} -iv ${encrypted_56e8fc46d7cd_iv} -in secring.asc.enc -out secring.asc -d
+      openssl aes-256-cbc -K ${encrypted_56e8fc46d7cd_key} -iv ${encrypted_56e8fc46d7cd_iv} -in pubring.asc.enc -out pubring.asc -d
+    fi
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
-    publish.sh; fi
+  - |
+    if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
+      sbt ++${TRAVIS_SCALA_VERSION} rddPublish dsPublish streamingPublish structuredPublish
+    fi
 
 env:
   global:
