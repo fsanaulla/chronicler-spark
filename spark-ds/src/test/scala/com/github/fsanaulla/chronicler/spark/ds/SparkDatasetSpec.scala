@@ -1,17 +1,39 @@
+/*
+ * Copyright 2018 Faiaz Sanaulla
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.github.fsanaulla.chronicler.spark.ds
 
-import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxCredentials, InfluxFormatter}
-import com.github.fsanaulla.chronicler.macros.Macros
+import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxFormatter}
+import com.github.fsanaulla.chronicler.macros.Influx
 import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
-import com.github.fsanaulla.chronicler.urlhttp.Influx
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
+import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
+import resource._
 
 class SparkDatasetSpec
   extends FlatSpec
     with Matchers
+    with Eventually
+    with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues {
 
@@ -28,33 +50,27 @@ class SparkDatasetSpec
   val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false)
-  implicit val wr: InfluxFormatter[Entity] = Macros.format[Entity]
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
+  implicit val wr: InfluxFormatter[Entity] = Influx.formatter[Entity]
 
   import spark.implicits._
 
   "Influx" should "create database" in {
-    val management = Influx.management(influxConf)
-    management.createDatabase(dbName).success.value.isSuccess shouldEqual true
-    management.close()
+    managed(InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)) map { cl =>
+      cl.createDatabase(dbName).success.value.isSuccess shouldEqual true
+    }
   }
 
   it should "save rdd to InfluxDB" in {
-    Models.Entity.samples()
-      .toDS()
-      .saveToInflux(dbName, meas)
+    Models.Entity.samples().toDS().saveToInfluxDB(dbName, meas) shouldEqual {}
   }
 
   it should "retrieve saved items" in {
-    val influx = Influx.io(influxConf)
-    val db = influx.database(dbName)
+    managed(InfluxIO(influxConf)) map { cl =>
 
-    db.readJs(s"SELECT * FROM $meas")
-      .success
-      .value
-      .queryResult
-      .length shouldEqual 20
-
-    influx.close()
+      eventually {
+        cl.database(dbName).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 20
+      }
+    }
   }
 }

@@ -1,20 +1,34 @@
 language: scala
+sudo: required
 
 scala:
   - 2.11.8
+  - 2.12.7
 
 jdk:
   - oraclejdk8
 
-sudo: required
-
-cache:
-  directories:
-    - "$HOME/.ivy2/cache"
-    - "$HOME/.sbt/boot"
-
 services:
   - docker
 
+cache:
+  directories:
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot"
+
+before_install:
+- if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
+  decrypt-keys.sh; fi
+
 script:
-  - sbt rddTest dsTest streamingTest structuredTest
+  - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
+    publish.sh; fi
+
+env:
+  global:
+  - secure: c/NbnYqUa4KNZBANOOTwwntx05vwOHSkenysw2xkPs4u7QHbaMHMXwwKPWSPoFpJ0UKxbRhCfoUCltVo1AvemQFWSq1da4kfSThUY1ZfrnWP264R/IOb+5TYYLrEX5gx9PWj1BNQJhjsoWW4zjNlAXN6ussaz/2luKv8qy2Jc58GCyS3ifZGMnjg34l13t2Zrtjx5yYlhJTa9Yg7vNXSFIq8AKo3r2MDjdvOgCKbAv4PNPr5DXelejjAFNe3pHNBw92d3wqhmuKgPMKSezTtV2hXE0Y4dYlSoVEN+Shg0aHNripR2Nf9OND1cXOcnZ0PlKA5+Os+RBY2OmJZ5DUeujshSdMHpDvhjWh1xCnsnp96xepoFZkw0WsNQhn6K+OoZh5Dv23ul6ZUFs/ipKjLJonyC7E7t4ZGcIa4io6sqg2/oCcXudLe23JMVwQFy39A9kPpm1PTwzi5X7ble1EvDT+AVgAu9+wUXPW+wMpbXXY19bYaDqO/P7ftUTatTRgU861dEX6mkswWqRksDsJwX9vqAn++FgUbWCEI+Mm48oOhjhs7zKQHQrX+lOnoHZaMbkLiwz8XGVDJaC2+39H7TrSzJlijg/Eza0UpE6GCrADxmVK1R1ZCVeWCy3Q9Axd6RJMePS63KoEjRBdbUu3k4mSUizzyakd/U//3Epyfsak=
+  - secure: aNqIbcjOdKrqE+90m9ojmI1Ybgiax+F5OKUr4rwDgnmoQWCVk6shN0okTROguEkcP6peO/iDKKPIbKzYsJm5u+BYVHhUMCpB10X0UtPvtQa/Mddam0qe8m3YONnMzEIYj/9DlVITCpdIDNdU/TjfEhuu8KaaJtvfroRKIgRDWTav1Wti9b9l573JVRpoRmMzTydLGvJtjyHiTCXWJXojWMwuUffI0Q6sFEav6KisBK3WL4WeRJIpno+KFJm4WAZqEuU8KuueFA5RL+adKMvbfYEtR7yi4KhSKPevQRH38xSuD+Ajc7QYuHYsR42bAckCfTjhNZVHZTCxXhlfw+br1krdzc9y9RXodvKWg9VWx345UEYaWq3dw17MaHwnzEAchFQYAKaQLK/EwbwDfLmYDKn0OEUTpmp2BGYvq/VHtRrSgBIpaURxqv0oZJZK8jZ/RXpchwk12YUJ+i00Zvx/iTk9BfTk85jtaglw8NFYqfmy/UCJVRQSCGKzEmUl7MG1LpqTTJTPigDiSMoKCGa8Oai+WF9diFHaA2ZP1DkdM3pmQsMerClKRl4iWKUCdo9BeFWXQNHZO1jHu9Mfnkf7+HfLyQEs9cJy/fw2XxJlFhmI41ITKlxCP4ovveB+LitOeFDiLmxPLD9LQ2Dc9SQHMQZtIjcPs9gV+S84nRxRB+k=
+  - secure: jjUhAbCxdrt7+BDVNknG5nt15MzFfqMTa/Nqw2ziHc0U/R0Ogn0c0BHZxJqi2lcS0n8GtuPDKpzdTEJz9twYOoR/B7wo5a+VCwoPGZKpG8SRvuBfyYe3eqrxD72hvKLOKkAhqbpgIbCMNL0vAokS/y44sfBkwjHmXCwIxHa+boYEsqFwcuu7wQmX2GRtlwZbkF/QLEURTsREv6UeBAq/TuFWi5gHSQz/YRhcyh4ds9EzLPxKWmMRzrUf01Em3QzYCU4YdeS5VNtsipflh5GuS2jF0DZrCGLUhkGGe6+rslApe6xdGjCswcIjW9IDQP0PahckvlfGALGQVlmdnd+VowXMacl8WLBtq9nGs6ad5DLCvvXlbHQfVp6IQj6cauzler39Ufmb1tN6/EDqsSO2bwmVA1cfbkHqRrcvAvHHg5PRLHQ49GC5WklRwHj3t2ShIq8Hu5UiYwTvQtVcNkcgpU5RhMHp4PrxmLsK3ZuNWyAIdnpiRDdFRfFNkDNy9+mWgeps03enDPcxyi4Rn8bmj44lkeU4q/5cxyJT3aftFaHahe7Zw9uy/ymq5zRUH8MXLcL1+e9hEy6VSISQDZE9Ptwnru7UQVX2Z5gpOHvTEkpJmd8dY+hSICHaHpmqlLIAM55pbFUUP7S0Tk18OtsmrTjhnjOBhR684wufmcZMq9I=

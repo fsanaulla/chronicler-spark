@@ -16,53 +16,56 @@
 
 package com.github.fsanaulla.chronicler.spark
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistencies, Consistency, Precision, Precisions}
-import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxWriter}
-import com.github.fsanaulla.chronicler.urlhttp.Influx
+import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
+import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import org.apache.spark.rdd.RDD
+import resource._
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success}
 
 package object rdd {
 
   /**
     * Extension that will provide static methods for saving RDDs to InfluxDB
     *
-    * @param rdd - Spark RDD
-    * @tparam T  - RDD inner type
+    * @param rdd - [[org.apache.spark.rdd.RDD]]
+    * @tparam T  - inner type
     */
   implicit final class RddOps[T](private val rdd: RDD[T]) extends AnyVal {
 
     /**
-      * Write Spark RDD to InfluxDB
+      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB, skipping success case result validation
       *
-      * @param dbName          - influxdb name
+      * @param dbName          - database name
       * @param measName        - measurement name
+      * @param onFailure       - function to handle failed cases
+      * @param onSuccess       - function to handle success case
       * @param consistency     - consistence level
       * @param precision       - time precision
       * @param retentionPolicy - retention policy type
-      * @param wr              - implicit influx writer
+      * @param wr              - implicit [[InfluxWriter]]
       */
-    def saveToInflux(dbName: String,
-                     measName: String,
-                     consistency: Consistency = Consistencies.ONE,
-                     precision: Precision = Precisions.NANOSECONDS,
-                     retentionPolicy: Option[String] = None)
-                    (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-
-
+    def saveToInfluxDB(dbName: String,
+                       measName: String,
+                       onFailure: Throwable => Unit = _ => (),
+                       onSuccess: WriteResult => Unit = _ => (),
+                       consistency: Option[Consistency] = None,
+                       precision: Option[Precision] = None,
+                       retentionPolicy: Option[String] = None)
+                      (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>
-
-        val influx = Influx.io(conf)
-        val meas = influx.measurement[T](dbName, measName)
-
-        partition.foreach { e =>
-          meas.write(e, consistency, precision, retentionPolicy)
+        managed(InfluxIO(conf)) map { cl =>
+          val meas = cl.measurement[T](dbName, measName)
+          partition.foreach(
+            meas.write(_, consistency, precision, retentionPolicy) match {
+              case Success(value) => onSuccess(value)
+              case Failure(ex)    => onFailure(ex)
+          })
         }
-
-        influx.close()
       }
-
     }
   }
 }

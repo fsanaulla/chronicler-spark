@@ -16,46 +16,56 @@
 
 package com.github.fsanaulla.chronicler.spark
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistencies, Consistency, Precision, Precisions}
-import com.github.fsanaulla.chronicler.core.model.{InfluxConfig, InfluxWriter}
-import com.github.fsanaulla.chronicler.urlhttp.Influx
+import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
+import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import org.apache.spark.sql.Dataset
+import resource._
 
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success}
 
 package object ds {
 
   /**
-    * Extension that will provide static methods for saving Dataset[T] to InfluxDB
+    * Extension that will provide static methods for saving [[Dataset]] to InfluxDB
     *
-    * @param ds - Spark Dataset of type T
-    * @tparam T - Dataset inner type
+    * @param ds - [[Dataset]]
+    * @tparam T - inner type
     */
   implicit final class DatasetOps[T](private val ds: Dataset[T]) extends AnyVal {
 
     /**
-      * Write Spark Dataset[T] to InfluxDB
+      * Write Spark [[Dataset]] to InfluxDB
       *
-      * @param dbName   - influxdb name
-      * @param measName - measurement name
-      * @param wr       - implicit influx writer
+      * @param dbName          - database name
+      * @param measName        - measurement name
+      * @param onFailure       - function to handle failed cases
+      * @param onSuccess       - function to handle success case
+      * @param consistency     - consistence level
+      * @param precision       - time precision
+      * @param retentionPolicy - retention policy type
+      * @param wr              - implicit [[InfluxWriter]]
       */
-    def saveToInflux(dbName: String,
-                     measName: String,
-                     consistency: Consistency = Consistencies.ONE,
-                     precision: Precision = Precisions.NANOSECONDS,
-                     retentionPolicy: Option[String] = None)
-                    (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-      ds.foreachPartition { partition =>
-
-        val influx = Influx.io(conf)
-        val meas = influx.measurement[T](dbName, measName)
-
-        partition.foreach { e =>
-          meas.write(e, consistency, precision, retentionPolicy)
+    def saveToInfluxDB(dbName: String,
+                       measName: String,
+                       onFailure: Throwable => Unit = _ => (),
+                       onSuccess: WriteResult => Unit = _ => (),
+                       consistency: Option[Consistency] = None,
+                       precision: Option[Precision] = None,
+                       retentionPolicy: Option[String] = None)
+                      (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
+      // it throw compiler error when using it, on ds
+      ds.rdd.foreachPartition { partition =>
+        managed(InfluxIO(conf)) map { cl =>
+          val meas = cl.measurement[T](dbName, measName)
+          partition.foreach(
+            meas.write(_, consistency, precision, retentionPolicy) match {
+              case Success(v)  => onSuccess(v)
+              case Failure(ex) => onFailure(ex)
+          })
         }
-
-        influx.close()
       }
     }
   }
