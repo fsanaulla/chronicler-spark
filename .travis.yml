@@ -1,29 +1,35 @@
 language: scala
 sudo: required
+
 scala:
-- 2.11.8
-- 2.12.7
+  - 2.11.8
+  - 2.12.7
+
 jdk:
-- oraclejdk8
+  - oraclejdk8
+
 services:
-- docker
+  - docker
+
 cache:
   directories:
   - "$HOME/.ivy2/cache"
   - "$HOME/.sbt/boot"
+
 before_install:
 - |
   if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
     openssl aes-256-cbc -K $encrypted_56e8fc46d7cd_key -iv $encrypted_56e8fc46d7cd_iv -in secrets.tar.enc -out secrets.tar -d
     tar xvf secrets.tar
+    chmod -x publish.sh tag.sh
   fi
+
 script:
-- sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
+  - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
+
 after_success:
-- |
-  if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
-    sbt ++${TRAVIS_SCALA_VERSION} rddPublish dsPublish streamingPublish structuredPublish
-  fi
+  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash publish.sh; bash tag.sh; fi
+
 env:
   global:
   - secure: GAJ+zS9f9zOE6YT6Bukx/t0DxrtX7HDBqCjPOIB2/qAh5CyohEz+619iSD03/5pa81cI4H+nWAj7hRiAfhNYseQZmce/qBa3izzWVbBAdsC8FjF17VL4i6dUmfNLr12hrRYbenKOEw6G4M8RsQnso+P8uZxnPyUFyojn43ohUa78OuPhDsefbkVOTgNSGBLVRm6QISbQdRhj7ik0ucCRlBJKwmu0D3T10t6a8YApFvCaK5A4fAZ3p+BtR0xN78VcKp+OY0TZSdkDqBe43JbBGevYoFkO/3Hp4QwGQ0I3tvOWDAL52HZ5Lk6497CTBz2rgofm9jnpF6BD6Bd03yMN6R48f9Z+9AB/AKq9Wkovp8jEuKkii0c+iVXuPKRPzidNVMbZgjaXJi2c8mF5nnj5YOQdYy6rxXKdHQxBLxMeBVqtEYNGHSvh5R8Ny80nDV2qiX6JIvLRTCNU1oaU/mzwWHcdokWFc4JR+BkTgxefFxpy1HyaU05gqdlJFej/uDhL8bZ3GNU4ZM01ptyFKHhsSkJ0cfryuoDhvibFOQH+8NP+ATrKcRRRikdQs0WN9I2LUz/whmq9ew01VK0I2N1zLIn+ckkkqc8QZok+bFKOFXA+1FhGofkqqrc5MQV5M20ZGquS7VQAl883NKL+wbtMjUM8BNls546wRA0ktxPJ2xs=
