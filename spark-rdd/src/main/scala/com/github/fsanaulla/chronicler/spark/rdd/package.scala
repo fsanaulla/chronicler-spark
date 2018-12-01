@@ -59,11 +59,10 @@ package object rdd {
       rdd.foreachPartition { partition =>
         managed(InfluxIO(conf)) map { cl =>
           val meas = cl.measurement[T](dbName, measName)
-          partition.foreach(
-            meas.write(_, consistency, precision, retentionPolicy) match {
-              case Success(value) => onSuccess(value)
-              case Failure(ex)    => onFailure(ex)
-          })
+          meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
+            case Success(v)  => onSuccess(v)
+            case Failure(ex) => onFailure(ex)
+          }
         }
       }
     }
