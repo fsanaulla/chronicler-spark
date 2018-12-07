@@ -25,7 +25,7 @@ jobs:
     - stage: test
       script: sbt ++2.11.8 rddTest dsTest streamingTest structuredTest
       name: "Running test on scala 2.11.8"
-      script: sbt ++2.12.7 rddTest dsTest streamingTest structuredTest
+    - script: sbt ++2.12.7 rddTest dsTest streamingTest structuredTest
       name: "Running test on scala 2.12.7"
     - stage: deploy
       script: ./scripts/publish.sh
