@@ -27,11 +27,11 @@ object Dependencies {
     urlIO
   )
 
-  val ds: List[sbt.ModuleID] =
-    "org.apache.spark" %% "spark-sql" % Versions.spark % Provided :: core
+  val ds: sbt.ModuleID =
+    "org.apache.spark" %% "spark-sql" % Versions.spark % Provided
 
-  val streaming: List[sbt.ModuleID] =
-    "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided :: core
+  val streaming: sbt.ModuleID =
+    "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
 
   val itTesting: Seq[ModuleID] = Seq(
     "org.jetbrains"        %  "annotations" % "15.0", // to solve evicted warning

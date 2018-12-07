@@ -18,13 +18,11 @@ package com.github.fsanaulla.chronicler.spark
 
 import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
 import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
-import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.spark.rdd._
 import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import org.apache.spark.sql.Dataset
-import resource._
 
 import scala.reflect.ClassTag
-import scala.util.{Failure, Success}
 
 package object ds {
 
@@ -57,15 +55,7 @@ package object ds {
                        retentionPolicy: Option[String] = None)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       // it throw compiler error when using it, on ds
-      ds.rdd.foreachPartition { partition =>
-        managed(InfluxIO(conf)) map { cl =>
-          val meas = cl.measurement[T](dbName, measName)
-          meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
-            case Success(v)  => onSuccess(v)
-            case Failure(ex) => onFailure(ex)
-          }
-        }
-      }
+      ds.rdd.saveToInfluxDB(dbName, measName, onFailure, onSuccess, consistency, precision, retentionPolicy)
     }
   }
 }

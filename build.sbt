@@ -21,8 +21,9 @@ lazy val sparkDs = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-ds",
-    libraryDependencies ++= Dependencies.arm :: Dependencies.ds
+    libraryDependencies += Dependencies.ds
   )
+  .dependsOn(sparkRdd)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -33,8 +34,9 @@ lazy val sparkStreaming = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-streaming",
-    libraryDependencies ++= Dependencies.arm :: Dependencies.streaming
+    libraryDependencies += Dependencies.streaming
   )
+  .dependsOn(sparkRdd)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -45,7 +47,7 @@ lazy val sparkStructuredStreaming = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-structured-streaming",
-    libraryDependencies ++= Dependencies.ds
+    libraryDependencies ++= Dependencies.ds :: Dependencies.core
   )
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
