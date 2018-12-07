@@ -23,18 +23,17 @@ before_install:
 jobs:
   include:
     - stage: test
-      scala: - 2.11.8
-      script: - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
-    - stage: test
-      scala: - 2.12.7
-      script: - sbt ++$TRAVIS_SCALA_VERSION rddTest dsTest streamingTest structuredTest
+      script: sbt ++2.11.8 rddTest dsTest streamingTest structuredTest
+      name: "Running test on scala 2.11.8"
+      script: sbt ++2.12.7 rddTest dsTest streamingTest structuredTest
+      name: "Running test on scala 2.12.7"
     - stage: deploy
       script: ./scripts/publish.sh
 
 stages:
-  - test
+  - name: test
   - name: deploy
-    if: (branch = master) AND (NOT (type IN (pull_request)))
+    if: branch = master AND type = push
 
 env:
   global:
