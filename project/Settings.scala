@@ -2,7 +2,6 @@ import com.typesafe.sbt.SbtPgp.autoImportImpl.{pgpPassphrase, pgpPublicRing, pgp
 import sbt.Keys._
 import sbt.librarymanagement.{Developer, LibraryManagementSyntax, ScmInfo}
 import sbt.{Opts, file, url}
-import xerial.sbt.Sonatype.autoImport.sonatypeProfileName
 
 object Settings extends LibraryManagementSyntax {
 
@@ -52,8 +51,6 @@ object Settings extends LibraryManagementSyntax {
     ),
     pgpPublicRing := file("pubring.asc"),
     pgpSecretRing := file("secring.asc"),
-    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray),
-    sonatypeProfileName :=
-      organization.value + "-" + name.value + "-" + sys.env.getOrElse("TRAVIS_SCALA_VERSION", "2.12.7")
+    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
   )
 }
