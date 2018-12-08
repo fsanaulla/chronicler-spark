@@ -19,21 +19,16 @@ object Dependencies {
 
   val core: List[ModuleID] = List(
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
-    scalaTest  % Test,
-    macros     % Test,
-    scalaCheck % Test,
-    generators % Test,
-    urlMng     % Test,
     urlIO
   )
 
-  val ds: List[sbt.ModuleID] =
-    "org.apache.spark" %% "spark-sql" % Versions.spark % Provided :: core
+  val ds: sbt.ModuleID =
+    "org.apache.spark" %% "spark-sql" % Versions.spark % Provided
 
-  val streaming: List[sbt.ModuleID] =
-    "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided :: core
+  val streaming: sbt.ModuleID =
+    "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
 
-  val itTesting: Seq[ModuleID] = Seq(
+  val itTesting: List[ModuleID] = List(
     "org.jetbrains"        %  "annotations" % "15.0", // to solve evicted warning
     "org.testcontainers"   %  "influxdb"    % "1.7.3" exclude("org.jetbrains", "annotations"),
     scalaCheck,

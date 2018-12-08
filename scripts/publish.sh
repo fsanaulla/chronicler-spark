@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sbt ++${TRAVIS_SCALA_VERSION} rddPublish
-sbt ++${TRAVIS_SCALA_VERSION} dsPublish
-sbt ++${TRAVIS_SCALA_VERSION} streamingPublish
-sbt ++${TRAVIS_SCALA_VERSION} structuredPublish
+sbt "project sparkRdd" "+ fullRelease"
+sbt "project sparkDs" "+ fullRelease"
+sbt "project sparkStreaming" "+ fullRelease"
+sbt "project sparkStructuredStreaming" "+ fullRelease"

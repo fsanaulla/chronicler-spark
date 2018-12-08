@@ -9,7 +9,10 @@ lazy val sparkRdd = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-rdd",
-    libraryDependencies ++= Dependencies.arm :: Dependencies.core
+    libraryDependencies ++= Seq(
+      Dependencies.arm,
+      Dependencies.urlMng % Test
+    ) ++ Dependencies.core
   )
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
@@ -21,8 +24,12 @@ lazy val sparkDs = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-ds",
-    libraryDependencies ++= Dependencies.arm :: Dependencies.ds
+    libraryDependencies ++= Seq(
+      Dependencies.ds, 
+      Dependencies.urlMng % Test
+    )
   )
+  .dependsOn(sparkRdd)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -33,8 +40,12 @@ lazy val sparkStreaming = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-streaming",
-    libraryDependencies ++= Dependencies.arm :: Dependencies.streaming
+    libraryDependencies ++= Seq(
+      Dependencies.streaming,
+      Dependencies.urlMng     % Test
+    )
   )
+  .dependsOn(sparkRdd)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -45,7 +56,10 @@ lazy val sparkStructuredStreaming = project
   .settings(Settings.publish: _*)
   .settings(
     name := "chronicler-spark-structured-streaming",
-    libraryDependencies ++= Dependencies.ds
+    libraryDependencies ++= Seq(
+      Dependencies.ds,
+      Dependencies.urlMng % Test
+    ) ++ Dependencies.core 
   )
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)

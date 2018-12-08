@@ -18,13 +18,11 @@ package com.github.fsanaulla.chronicler.spark
 
 import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
 import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
-import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.spark.rdd._
 import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import org.apache.spark.streaming.dstream.DStream
-import resource._
 
 import scala.reflect.ClassTag
-import scala.util.{Failure, Success}
 
 package object streaming {
 
@@ -56,17 +54,7 @@ package object streaming {
                        precision: Option[Precision] = None,
                        retentionPolicy: Option[String] = None)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-      stream.foreachRDD { rdd =>
-        rdd.foreachPartition { partition =>
-          managed(InfluxIO(conf)) map { cl =>
-            val meas = cl.measurement[T](dbName, measName)
-            meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
-              case Success(value) => onSuccess(value)
-              case Failure(ex) => onFailure(ex)
-            }
-          }
-        }
-      }
+      stream.foreachRDD(_.saveToInfluxDB(dbName, measName, onFailure, onSuccess, consistency, precision, retentionPolicy))
     }
   }
 }

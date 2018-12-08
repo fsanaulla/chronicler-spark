@@ -43,8 +43,8 @@ private[streaming] final class InfluxForeachWriter[T: ClassTag](dbName: String,
                                                                 retentionPolicy: Option[String] = None)
                                                                (implicit wr: InfluxWriter[T], conf: InfluxConfig) extends ForeachWriter[T] {
 
-  private var influx: UrlIOClient = _
-  private var meas: Measurement[T] = _
+  private[this] var influx: UrlIOClient = _
+  private[this] var meas: Measurement[T] = _
 
   override def open(partitionId: Long, version: Long): Boolean = {
     influx = InfluxIO(conf)
