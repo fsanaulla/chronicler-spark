@@ -21,8 +21,8 @@ import com.github.fsanaulla.chronicler.macros.Influx
 import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
-import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
+import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}

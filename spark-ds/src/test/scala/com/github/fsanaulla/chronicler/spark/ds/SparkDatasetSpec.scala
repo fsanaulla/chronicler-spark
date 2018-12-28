@@ -21,8 +21,8 @@ import com.github.fsanaulla.chronicler.macros.Influx
 import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
-import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
+import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
@@ -67,7 +67,6 @@ class SparkDatasetSpec
 
   it should "retrieve saved items" in {
     managed(InfluxIO(influxConf)) map { cl =>
-
       eventually {
         cl.database(dbName).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 20
       }

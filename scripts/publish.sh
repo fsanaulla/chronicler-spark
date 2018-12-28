@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-sbt "project sparkRdd" "+ fullRelease"
-sbt "project sparkDs" "+ fullRelease"
-sbt "project sparkStreaming" "+ fullRelease"
-sbt "project sparkStructuredStreaming" "+ fullRelease"
+modules=(
+    sparkRdd sparkDs sparkStreaming sparkStructuredStreaming
+)
+
+for md in "${modules[@]}"
+do
+   sbt "project $md" "++$1 fullRelease"
+done

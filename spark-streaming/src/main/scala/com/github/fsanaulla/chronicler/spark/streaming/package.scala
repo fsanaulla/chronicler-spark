@@ -19,7 +19,7 @@ package com.github.fsanaulla.chronicler.spark
 import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
 import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
 import com.github.fsanaulla.chronicler.spark.rdd._
-import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
+import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.streaming.dstream.DStream
 
 import scala.reflect.ClassTag

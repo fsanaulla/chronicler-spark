@@ -19,8 +19,8 @@ package com.github.fsanaulla.chronicler.spark.structured.streaming
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.spark.tests.DockerizedInfluxDB
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
-import com.github.fsanaulla.chronicler.urlhttp.io.models.InfluxConfig
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
+import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SparkSession}

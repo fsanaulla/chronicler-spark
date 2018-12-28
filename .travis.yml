@@ -17,23 +17,29 @@ before_install:
     if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
       openssl aes-256-cbc -K $encrypted_56e8fc46d7cd_key -iv $encrypted_56e8fc46d7cd_iv -in secrets.tar.enc -out secrets.tar -d
       tar xvf secrets.tar
-      chmod 777 scripts/publish.sh
+      chmod 777 scripts/publish.sh scripts/test.sh
     fi
 
 jobs:
   include:
     - stage: test
-      script: sbt ++2.11.8 rddTest dsTest streamingTest structuredTest
+      script: ./scripts/test.sh 2.11.8
       name: "Running test on scala 2.11.8"
-    - script: sbt ++2.12.7 rddTest dsTest streamingTest structuredTest
-      name: "Running test on scala 2.12.7"
-    - stage: deploy
-      script: ./scripts/publish.sh
+    - script: ./scripts/test.sh 2.12.8
+      name: "Running test on scala 2.12.8"
+    - stage: deploy11
+      script: ./scripts/publish.sh 2.11.8
+      name: "Deploying scala 2.11.8 artifacts"
+    - stage: deploy12
+    - script: ./script/publish.sh 2.12.8
+      name: "Deploying scala 2.12.8 artifacts"
 
 stages:
   - name: test
-  - name: deploy
-    if: branch = master AND type = push
+  - name: deploy11
+    if: branch = master AND type != pull_request
+  - name: deploy12
+    if: branch = master AND type != pull_request
 
 env:
   global:

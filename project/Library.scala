@@ -1,9 +1,9 @@
 import sbt._
 
-object Dependencies {
+object Library {
   
   object Versions {
-    val chronicler = "0.4.1"
+    val chronicler = "0.4.2"
     val spark      = "2.4.0"
     val scalaTest  = "3.0.5"
     val scalaCheck = "1.14.0"
