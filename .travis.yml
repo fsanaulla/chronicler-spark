@@ -31,7 +31,7 @@ jobs:
       script: ./scripts/publish.sh 2.11.8
       name: "Deploying scala 2.11.8 artifacts"
     - stage: deploy12
-    - script: ./script/publish.sh 2.12.8
+      script: ./script/publish.sh 2.12.8
       name: "Deploying scala 2.12.8 artifacts"
 
 stages:
