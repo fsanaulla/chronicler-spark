@@ -6,5 +6,5 @@ tests=(
 
 for t in "${tests[@]}"
 do
-   sbt ++$1 ${t}
+   sbt ++${TRAVIS_SCALA_VERSION} ${t}
 done

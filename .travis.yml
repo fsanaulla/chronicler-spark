@@ -4,8 +4,14 @@ sudo: required
 jdk:
   - oraclejdk8
 
+scala:
+  - 2.11.8
+  - 2.12.8
+
 services:
   - docker
+
+script: ./scripts/test.sh
 
 cache:
   directories:
@@ -23,23 +29,25 @@ before_install:
 
 jobs:
   include:
-    - stage: test
-      script: ./scripts/test.sh 2.11.8
-      name: "Running test on scala 2.11.8"
-    - script: ./scripts/test.sh 2.12.8
-      name: "Running test on scala 2.12.8"
-    - stage: deploy11
-      script: ./scripts/publish.sh 2.11.8
+#    - stage: test
+#      script: ./scripts/test.sh 2.11.8
+#      name: "Running test on scala 2.11.8"
+#    - script: ./scripts/test.sh 2.12.8
+#      name: "Running test on scala 2.12.8"
+    - stage: deploy_2.11
+      script: ./scripts/publish.sh
       name: "Deploying scala 2.11.8 artifacts"
-    - stage: deploy12
-      script: ./script/publish.sh 2.12.8
+      scala: 2.11.8
+    - stage: deploy_2.12
+      script: ./scripts/publish.sh
       name: "Deploying scala 2.12.8 artifacts"
+      scala: 2.12.8
 
 stages:
   - name: test
-  - name: deploy11
+  - name: deploy_2.11
     if: branch = master AND type != pull_request
-  - name: deploy12
+  - name: deploy_2.12
     if: branch = master AND type != pull_request
 
 env:

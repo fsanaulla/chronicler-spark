@@ -6,5 +6,5 @@ modules=(
 
 for md in "${modules[@]}"
 do
-   sbt ";project $md; ++$1; fullRelease"
+   sbt ";project $md; ++$TRAVIS_SCALA_VERSION; fullRelease"
 done
