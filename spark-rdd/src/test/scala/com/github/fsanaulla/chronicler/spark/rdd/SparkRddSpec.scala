@@ -53,17 +53,24 @@ class SparkRddSpec
     }
   }
 
-  it should "save rdd to InfluxDB" in {
+  it should "save rdd to InfluxDB using writer" in {
     sc
       .parallelize(Models.Entity.samples())
       .saveToInfluxDB(dbName, meas)
       .shouldEqual {}
   }
 
+  it should "save rdd to InfluxDB using custom serialization" in {
+    sc
+      .parallelize(Models.Entity.samples())
+      .saveToInfluxDBCustom(dbName, e => s"meas,name=${e.name} surname=${e.surname}")
+      .shouldEqual {}
+  }
+
   it should "retrieve saved items" in {
     managed(InfluxIO(influxConf)) map { cl =>
       eventually {
-        cl.database(dbName).readJs("SELECT * FROM meas").success.value.queryResult.length shouldEqual 20
+        cl.database(dbName).readJs("SELECT * FROM meas").success.value.queryResult.length shouldEqual 40
       }
     }
   }

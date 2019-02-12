@@ -56,5 +56,16 @@ package object streaming {
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       stream.foreachRDD(_.saveToInfluxDB(dbName, measName, onFailure, onSuccess, consistency, precision, retentionPolicy))
     }
+
+    def saveToInfluxDBCustom(dbName: String,
+                             serializationF: T => String,
+                             onFailure: Throwable => Unit = _ => (),
+                             onSuccess: WriteResult => Unit = _ => (),
+                             consistency: Option[Consistency] = None,
+                             precision: Option[Precision] = None,
+                             retentionPolicy: Option[String] = None)
+                            (implicit conf: InfluxConfig, tt: ClassTag[T]): Unit = {
+      stream.foreachRDD(_.saveToInfluxDBCustom(dbName, serializationF, onFailure, onSuccess, consistency, precision, retentionPolicy))
+    }
   }
 }
