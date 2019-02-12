@@ -5,7 +5,7 @@ import org.testcontainers.containers.InfluxDBContainer
 
 trait DockerizedInfluxDB extends BeforeAndAfterAll { self: Suite =>
 
-  private val influx = new InfluxDBContainer()
+  private val influx = new InfluxDBContainer("1.7.3")
 
   /** host address */
   def host: String = influx.getContainerIpAddress

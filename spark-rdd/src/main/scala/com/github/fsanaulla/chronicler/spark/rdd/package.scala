@@ -37,7 +37,7 @@ package object rdd {
   implicit final class RddOps[T](private val rdd: RDD[T]) extends AnyVal {
 
     /**
-      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB, skipping success case result validation
+      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB
       *
       * @param dbName          - database name
       * @param measName        - measurement name
@@ -60,6 +60,25 @@ package object rdd {
         managed(InfluxIO(conf)) map { cl =>
           val meas = cl.measurement[T](dbName, measName)
           meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
+            case Success(v)  => onSuccess(v)
+            case Failure(ex) => onFailure(ex)
+          }
+        }
+      }
+    }
+
+    def saveToInfluxDBCustom(dbName: String,
+                             serializationF: T => String,
+                             onFailure: Throwable => Unit = _ => (),
+                             onSuccess: WriteResult => Unit = _ => (),
+                             consistency: Option[Consistency] = None,
+                             precision: Option[Precision] = None,
+                             retentionPolicy: Option[String] = None)
+                            (implicit conf: InfluxConfig, tt: ClassTag[T]): Unit = {
+      rdd.foreachPartition { partition =>
+        managed(InfluxIO(conf)) map { client =>
+          val db = client.database(dbName)
+          db.bulkWriteNative(partition.map(serializationF).toSeq, consistency, precision, retentionPolicy) match {
             case Success(v)  => onSuccess(v)
             case Failure(ex) => onFailure(ex)
           }

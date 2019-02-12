@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.fsanaulla.chronicler.spark.ds
+package com.github.fsanaulla.chronicler.spark.streaming
 
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxFormatter}
 import com.github.fsanaulla.chronicler.macros.Influx
@@ -23,28 +23,28 @@ import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
-import resource._
+import resource.managed
 
-class SparkDatasetSpec
+import scala.collection.mutable
+
+class SparkStreamingCustomSpec
   extends FlatSpec
     with Matchers
+    with DockerizedInfluxDB
     with Eventually
     with IntegrationPatience
-    with DockerizedInfluxDB
     with TryValues {
 
   val conf: SparkConf = new SparkConf()
     .setAppName("Rdd")
     .setMaster("local[*]")
 
-  val spark: SparkSession = SparkSession
-    .builder()
-    .config(conf)
-    .getOrCreate()
+  val sc: SparkContext = new SparkContext(conf)
+  val ssc  = new StreamingContext(sc, Seconds(1))
 
   val dbName = "db"
   val meas = "meas"
@@ -53,32 +53,32 @@ class SparkDatasetSpec
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
   implicit val wr: InfluxFormatter[Entity] = Influx.formatter[Entity]
 
-  import spark.implicits._
-
   "Influx" should "create database" in {
     managed(InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)) map { cl =>
       cl.createDatabase(dbName).success.value.isSuccess shouldEqual true
     }
   }
 
-  it should "save rdd to InfluxDB" in {
-    Models.Entity.samples()
-      .toDS()
-      .saveToInfluxDB(dbName, meas)
-      .shouldEqual {}
-  }
+  it should "save rdd to InfluxDB with custom serialization" in {
+    val rdd = sc.parallelize(Models.Entity.samples())
 
-  it should "save rdd to InfluxDB using custom serialization" in {
-    Models.Entity.samples()
-      .toDS()
-      .saveToInfluxDBCustom(dbName, e => s"meas,name=${e.name} surname=${e.surname}")
-      .shouldEqual {}
+    // define stream
+    ssc
+      .queueStream(mutable.Queue(rdd))
+      .saveToInfluxDBCustom(dbName, e => s"$meas,name=${e.name} surname=${e.surname}")
+
+    ssc.start()
+
+    // necessary stub
+    Thread.sleep(22 * 1000)
+
+    ssc.stop()
   }
 
   it should "retrieve saved items" in {
     managed(InfluxIO(influxConf)) map { cl =>
       eventually {
-        cl.database(dbName).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 40
+        cl.database(dbName).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 20
       }
     }
   }

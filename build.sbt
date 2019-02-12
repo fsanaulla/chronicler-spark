@@ -43,7 +43,8 @@ lazy val sparkStreaming = project
     libraryDependencies ++= Seq(
       Library.streaming,
       Library.urlMng     % Test
-    )
+    ),
+    parallelExecution in Test := false
   )
   .dependsOn(sparkRdd)
   .dependsOn(tests % "test->test")
