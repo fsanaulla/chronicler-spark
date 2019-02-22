@@ -1,9 +1,9 @@
 import de.heikoseeberger.sbtheader.License
 
-lazy val headerSettings = headerLicense := Some(License.ALv2("2018", "Faiaz Sanaulla"))
+lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2019", "Faiaz Sanaulla"))
 
 lazy val sparkRdd = project
-  .in(file("spark-rdd"))
+  .in(file("modules/rdd"))
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
@@ -18,7 +18,7 @@ lazy val sparkRdd = project
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkDs = project
-  .in(file("spark-ds"))
+  .in(file("modules/ds"))
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
@@ -34,7 +34,7 @@ lazy val sparkDs = project
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkStreaming = project
-  .in(file("spark-streaming"))
+  .in(file("modules/streaming"))
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
@@ -51,7 +51,7 @@ lazy val sparkStreaming = project
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkStructuredStreaming = project
-  .in(file("spark-structured-streaming"))
+  .in(file("modules/structured-streaming"))
   .settings(headerSettings)
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
@@ -66,7 +66,7 @@ lazy val sparkStructuredStreaming = project
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val tests = project
-  .in(file("testing"))
+  .in(file("modules/testing"))
   .settings(Settings.common: _*)
   .settings(
     name := "chronicler-spark-testing",

@@ -29,11 +29,6 @@ before_install:
 
 jobs:
   include:
-#    - stage: test
-#      script: ./scripts/test.sh 2.11.8
-#      name: "Running test on scala 2.11.8"
-#    - script: ./scripts/test.sh 2.12.8
-#      name: "Running test on scala 2.12.8"
     - stage: deploy_2.11
       script: ./scripts/publish.sh
       name: "Deploying scala 2.11.8 artifacts"
