@@ -16,7 +16,7 @@
 
 package com.github.fsanaulla.chronicler.spark.rdd
 
-import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxFormatter}
+import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.macros.Influx
 import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
@@ -26,7 +26,6 @@ import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
-import resource._
 
 class SparkRddSpec
   extends FlatSpec
@@ -40,38 +39,36 @@ class SparkRddSpec
     .setAppName("Rdd")
     .setMaster("local[*]")
   val sc: SparkContext = new SparkContext(conf)
-  val dbName = "db"
+
+  val db = "db"
   val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
-  implicit val wr: InfluxFormatter[Entity] = Influx.formatter[Entity]
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+  implicit val wr: InfluxWriter[Entity] = Influx.writer[Entity]
 
   "Influx" should "create database" in {
-    managed(InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)) map { cl =>
-      cl.createDatabase(dbName).success.value.isSuccess shouldEqual true
-    }
+    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
+
+    mng.createDatabase(db).success.value.isSuccess shouldEqual true
+
+    mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB using writer" in {
     sc
       .parallelize(Models.Entity.samples())
-      .saveToInfluxDB(dbName, meas)
-      .shouldEqual {}
-  }
-
-  it should "save rdd to InfluxDB using custom serialization" in {
-    sc
-      .parallelize(Models.Entity.samples())
-      .saveToInfluxDBCustom(dbName, e => s"meas,name=${e.name} surname=${e.surname}")
+      .saveToInfluxDB(db, meas)
       .shouldEqual {}
   }
 
   it should "retrieve saved items" in {
-    managed(InfluxIO(influxConf)) map { cl =>
-      eventually {
-        cl.database(dbName).readJs("SELECT * FROM meas").success.value.queryResult.length shouldEqual 40
-      }
+    val cl = InfluxIO(influxConf)
+
+    eventually {
+      cl.database(db).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 20
     }
+
+    cl.close() shouldEqual {}
   }
 }

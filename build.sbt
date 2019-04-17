@@ -10,7 +10,6 @@ lazy val sparkRdd = project
   .settings(
     name := "chronicler-spark-rdd",
     libraryDependencies ++= Seq(
-      Library.arm,
       Library.urlMng % Test
     ) ++ Library.core
   )

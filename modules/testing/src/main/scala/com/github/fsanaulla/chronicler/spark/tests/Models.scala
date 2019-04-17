@@ -6,6 +6,8 @@ import com.github.fsanaulla.chronicler.macros.annotations.{field, tag}
 import com.github.fsanaulla.scalacheck.Arb
 import org.scalacheck.{Arbitrary, Gen}
 
+import scala.annotation.tailrec
+
 object Models {
 
   final case class Entity(@tag name: String, @field surname: String)
@@ -18,12 +20,13 @@ object Models {
 
     def samples(count: Int = 20): Seq[Entity] = {
 
+      @tailrec
       def samplesRec(samples: Seq[Entity], acc: Int): Seq[Entity] = {
         if (acc >= count) samples
         else {
           entityArb.arbitrary.sample match {
             case Some(e) => samplesRec(samples :+ e, acc + 1)
-            case _ => samplesRec(samples, acc)
+            case _       => samplesRec(samples, acc)
           }
         }
       }

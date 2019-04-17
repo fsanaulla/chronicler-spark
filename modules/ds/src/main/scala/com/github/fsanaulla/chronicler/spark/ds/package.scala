@@ -57,16 +57,5 @@ package object ds {
       // it throw compiler error when using it, on ds
       ds.rdd.saveToInfluxDB(dbName, measName, onFailure, onSuccess, consistency, precision, retentionPolicy)
     }
-
-    def saveToInfluxDBCustom(dbName: String,
-                             serializationF: T => String,
-                             onFailure: Throwable => Unit = _ => (),
-                             onSuccess: WriteResult => Unit = _ => (),
-                             consistency: Option[Consistency] = None,
-                             precision: Option[Precision] = None,
-                             retentionPolicy: Option[String] = None)
-                            (implicit conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-      ds.rdd.saveToInfluxDBCustom(dbName, serializationF, onFailure, onSuccess, consistency, precision, retentionPolicy)
-    }
   }
 }

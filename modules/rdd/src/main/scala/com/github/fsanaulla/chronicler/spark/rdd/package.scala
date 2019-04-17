@@ -21,7 +21,6 @@ import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.rdd.RDD
-import resource._
 
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
@@ -32,7 +31,7 @@ package object rdd {
     * Extension that will provide static methods for saving RDDs to InfluxDB
     *
     * @param rdd - [[org.apache.spark.rdd.RDD]]
-    * @tparam T  - inner type
+    * @tparam T - inner type
     */
   implicit final class RddOps[T](private val rdd: RDD[T]) extends AnyVal {
 
@@ -57,32 +56,15 @@ package object rdd {
                        retentionPolicy: Option[String] = None)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>
-        managed(InfluxIO(conf)) map { cl =>
-          val meas = cl.measurement[T](dbName, measName)
-          meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
-            case Success(v)  => onSuccess(v)
-            case Failure(ex) => onFailure(ex)
-          }
-        }
-      }
-    }
+        val io = InfluxIO(conf)
+        val meas = io.measurement[T](dbName, measName)
 
-    def saveToInfluxDBCustom(dbName: String,
-                             serializationF: T => String,
-                             onFailure: Throwable => Unit = _ => (),
-                             onSuccess: WriteResult => Unit = _ => (),
-                             consistency: Option[Consistency] = None,
-                             precision: Option[Precision] = None,
-                             retentionPolicy: Option[String] = None)
-                            (implicit conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-      rdd.foreachPartition { partition =>
-        managed(InfluxIO(conf)) map { client =>
-          val db = client.database(dbName)
-          db.bulkWriteNative(partition.map(serializationF).toSeq, consistency, precision, retentionPolicy) match {
-            case Success(v)  => onSuccess(v)
-            case Failure(ex) => onFailure(ex)
-          }
+        meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
+          case Success(v)  => onSuccess(v)
+          case Failure(ex) => onFailure(ex)
         }
+
+        io.close()
       }
     }
   }

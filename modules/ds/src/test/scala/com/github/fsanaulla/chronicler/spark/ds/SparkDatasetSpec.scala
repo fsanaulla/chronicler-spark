@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Faiaz Sanaulla
+ * Copyright 2018-2019 Faiaz Sanaulla
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
-import resource._
 
 class SparkDatasetSpec
   extends FlatSpec
@@ -56,9 +55,11 @@ class SparkDatasetSpec
   import spark.implicits._
 
   "Influx" should "create database" in {
-    managed(InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)) map { cl =>
-      cl.createDatabase(dbName).success.value.isSuccess shouldEqual true
-    }
+    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
+
+    mng.createDatabase(dbName).success.value.isSuccess shouldEqual true
+
+    mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB" in {
@@ -68,18 +69,13 @@ class SparkDatasetSpec
       .shouldEqual {}
   }
 
-  it should "save rdd to InfluxDB using custom serialization" in {
-    Models.Entity.samples()
-      .toDS()
-      .saveToInfluxDBCustom(dbName, e => s"meas,name=${e.name} surname=${e.surname}")
-      .shouldEqual {}
-  }
-
   it should "retrieve saved items" in {
-    managed(InfluxIO(influxConf)) map { cl =>
-      eventually {
-        cl.database(dbName).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 40
-      }
+    val cl = InfluxIO(influxConf)
+
+    eventually {
+      cl.database(dbName).readJs("SELECT * FROM meas").success.value.queryResult.length shouldEqual 20
     }
+
+    cl.close() shouldEqual {}
   }
 }

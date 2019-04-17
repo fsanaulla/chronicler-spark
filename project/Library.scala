@@ -14,7 +14,6 @@ object Library {
   val macros     = "com.github.fsanaulla" %% "chronicler-macros"         % Versions.chronicler
   val scalaTest  = "org.scalatest"        %% "scalatest"                 % Versions.scalaTest
   val scalaCheck = "org.scalacheck"       %% "scalacheck"                % Versions.scalaCheck
-  val arm        = "com.jsuereth"         %% "scala-arm"                 % "2.0"
   val generators = "com.github.fsanaulla" %% "scalacheck-generators"     % "0.2.0"
 
   val core: List[ModuleID] = List(
