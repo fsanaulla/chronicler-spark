@@ -40,6 +40,7 @@ package object rdd {
       *
       * @param dbName          - database name
       * @param measName        - measurement name
+      * @param batchSize       - batch size
       * @param onFailure       - function to handle failed cases
       * @param onSuccess       - function to handle success case
       * @param consistency     - consistence level
@@ -49,6 +50,7 @@ package object rdd {
       */
     def saveToInfluxDB(dbName: String,
                        measName: String,
+                       batchSize: Int = 2500,
                        onFailure: Throwable => Unit = _ => (),
                        onSuccess: WriteResult => Unit = _ => (),
                        consistency: Option[Consistency] = None,
@@ -56,15 +58,17 @@ package object rdd {
                        retentionPolicy: Option[String] = None)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>
-        val io = InfluxIO(conf)
-        val meas = io.measurement[T](dbName, measName)
+        val client = InfluxIO(conf)
+        val meas = client.measurement[T](dbName, measName)
 
-        meas.bulkWrite(partition.toSeq, consistency, precision, retentionPolicy) match {
-          case Success(v)  => onSuccess(v)
-          case Failure(ex) => onFailure(ex)
+        partition.sliding(batchSize, batchSize).foreach { batch =>
+          meas.bulkWrite(batch, consistency, precision, retentionPolicy) match {
+            case Success(result) => onSuccess(result)
+            case Failure(ex)     => onFailure(ex)
+          }
         }
 
-        io.close()
+        client.close()
       }
     }
   }
