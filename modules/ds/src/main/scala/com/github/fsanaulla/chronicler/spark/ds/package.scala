@@ -48,6 +48,7 @@ package object ds {
       */
     def saveToInfluxDB(dbName: String,
                        measName: String,
+                       batchSize: Int = 2500,
                        onFailure: Throwable => Unit = _ => (),
                        onSuccess: WriteResult => Unit = _ => (),
                        consistency: Option[Consistency] = None,
@@ -55,7 +56,7 @@ package object ds {
                        retentionPolicy: Option[String] = None)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       // it throw compiler error when using it, on ds
-      ds.rdd.saveToInfluxDB(dbName, measName, onFailure, onSuccess, consistency, precision, retentionPolicy)
+      ds.rdd.saveToInfluxDB(dbName, measName, batchSize, onFailure, onSuccess, consistency, precision, retentionPolicy)
     }
   }
 }

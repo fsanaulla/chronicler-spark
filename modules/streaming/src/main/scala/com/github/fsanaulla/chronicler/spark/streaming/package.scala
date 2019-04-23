@@ -30,7 +30,7 @@ package object streaming {
     * Extension that will provide static methods for saving DStream to InfluxDB
     *
     * @param stream - [[DStream]]
-    * @tparam T     - inner type
+    * @tparam T - inner type
     */
   implicit final class DStreamOps[T](private val stream: DStream[T]) extends AnyVal {
 
@@ -48,13 +48,15 @@ package object streaming {
       */
     def saveToInfluxDB(dbName: String,
                        measName: String,
+                       batchSize: Int = 2500,
                        onFailure: Throwable => Unit = _ => (),
                        onSuccess: WriteResult => Unit = _ => (),
                        consistency: Option[Consistency] = None,
                        precision: Option[Precision] = None,
                        retentionPolicy: Option[String] = None)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-      stream.foreachRDD(_.saveToInfluxDB(dbName, measName, onFailure, onSuccess, consistency, precision, retentionPolicy))
+      stream.foreachRDD(_.saveToInfluxDB(dbName, measName, batchSize, onFailure, onSuccess, consistency, precision, retentionPolicy))
     }
   }
+
 }
