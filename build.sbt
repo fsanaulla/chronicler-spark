@@ -2,6 +2,16 @@ import de.heikoseeberger.sbtheader.License
 
 lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2019", "Faiaz Sanaulla"))
 
+lazy val `chronicler-spark` = project
+  .in(file("."))
+  .settings(Settings.common: _*)
+  .aggregate(
+    sparkRdd,
+    sparkDs,
+    sparkStreaming,
+    sparkStructuredStreaming
+  )
+
 lazy val sparkRdd = project
   .in(file("modules/rdd"))
   .settings(headerSettings)

@@ -19,6 +19,10 @@ cache:
   - "$HOME/.sbt/boot"
   - "$HOME/.m2"
 
+ignore:
+  - "changelog/*"
+  - "scripts/*"
+
 before_install:
   - |
     if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
