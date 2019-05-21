@@ -5,12 +5,17 @@ lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2019", "Faiaz
 lazy val `chronicler-spark` = project
   .in(file("."))
   .settings(Settings.common: _*)
-  .aggregate(
-    sparkRdd,
-    sparkDs,
-    sparkStreaming,
-    sparkStructuredStreaming
+
+lazy val sparkCore = project
+  .in(file("modules/core"))
+  .settings(headerSettings)
+  .settings(Settings.common: _*)
+  .settings(Settings.publish: _*)
+  .settings(
+    name := "chronicler-spark-core",
+    libraryDependencies += Library.chroniclerCore
   )
+  .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkRdd = project
   .in(file("modules/rdd"))
@@ -23,6 +28,7 @@ lazy val sparkRdd = project
       Library.urlMng % Test
     ) ++ Library.core
   )
+  .dependsOn(sparkCore)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -38,7 +44,7 @@ lazy val sparkDs = project
       Library.urlMng % Test
     )
   )
-  .dependsOn(sparkRdd)
+  .dependsOn(sparkCore, sparkRdd)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -55,7 +61,7 @@ lazy val sparkStreaming = project
     ),
     parallelExecution in Test := false
   )
-  .dependsOn(sparkRdd)
+  .dependsOn(sparkCore, sparkRdd)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -71,6 +77,7 @@ lazy val sparkStructuredStreaming = project
       Library.urlMng % Test
     ) ++ Library.core 
   )
+  .dependsOn(sparkCore)
   .dependsOn(tests % "test->test")
   .enablePlugins(AutomateHeaderPlugin)
 

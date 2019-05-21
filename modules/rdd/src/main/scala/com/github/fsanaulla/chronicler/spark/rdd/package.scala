@@ -16,8 +16,8 @@
 
 package com.github.fsanaulla.chronicler.spark
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
-import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
+import com.github.fsanaulla.chronicler.core.model.InfluxWriter
+import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.rdd.RDD
@@ -38,33 +38,35 @@ package object rdd {
     /**
       * Write [[org.apache.spark.rdd.RDD]] to InfluxDB
       *
-      * @param dbName          - database name
-      * @param measName        - measurement name
-      * @param batchSize       - batch size
-      * @param onFailure       - function to handle failed cases
-      * @param onSuccess       - function to handle success case
-      * @param consistency     - consistence level
-      * @param precision       - time precision
-      * @param retentionPolicy - retention policy type
-      * @param wr              - implicit [[InfluxWriter]]
+      * @param dbName   - database name
+      * @param measName - measurement name
+      * @param ch - defined callbacks for responses
+      * @param dataInfo - data characteristics
       */
     def saveToInfluxDB(dbName: String,
                        measName: String,
-                       batchSize: Int = 2500,
-                       onFailure: Throwable => Unit = _ => (),
-                       onSuccess: WriteResult => Unit = _ => (),
-                       consistency: Option[Consistency] = None,
-                       precision: Option[Precision] = None,
-                       retentionPolicy: Option[String] = None)
+                       ch: Option[CallbackHandler] = None,
+                       dataInfo: WriteConfig = WriteConfig.default)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>
         val client = InfluxIO(conf)
         val meas = client.measurement[T](dbName, measName)
 
-        partition.sliding(batchSize, batchSize).foreach { batch =>
-          meas.bulkWrite(batch, consistency, precision, retentionPolicy) match {
-            case Success(result) => onSuccess(result)
-            case Failure(ex)     => onFailure(ex)
+        partition.sliding(dataInfo.batchSize, dataInfo.batchSize).foreach { batch =>
+
+          // check if rh is defined
+          ch match {
+            // define callbacks if defined
+            case Some(rh) =>
+              meas.bulkWrite(batch, dataInfo.consistency, dataInfo.precision, dataInfo.retentionPolicy) match {
+                case Success(Right(code)) => rh.onSuccess(code)
+                // application level issues
+                case Success(Left(ex))    => rh.onApplicationFailure(ex)
+                // connection/network level issues
+                case Failure(ex)          => rh.onNetworkFailure(ex)
+              }
+            case _ =>
+              meas.bulkWrite(batch, dataInfo.consistency, dataInfo.precision, dataInfo.retentionPolicy)
           }
         }
 

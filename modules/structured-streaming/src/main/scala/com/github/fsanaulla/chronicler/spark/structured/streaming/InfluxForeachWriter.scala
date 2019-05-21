@@ -16,9 +16,8 @@
 
 package com.github.fsanaulla.chronicler.spark.structured.streaming
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
-import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
-import com.github.fsanaulla.chronicler.urlhttp.io.api.Measurement
+import com.github.fsanaulla.chronicler.core.model.InfluxWriter
+import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.sql.ForeachWriter
@@ -36,15 +35,12 @@ import scala.util.{Failure, Success}
   */
 private[streaming] final class InfluxForeachWriter[T: ClassTag](dbName: String,
                                                                 measName: String,
-                                                                onFailure: Throwable => Unit = _ => (),
-                                                                onSuccess: WriteResult => Unit = _ => (),
-                                                                consistency: Option[Consistency] = None,
-                                                                precision: Option[Precision] = None,
-                                                                retentionPolicy: Option[String] = None)
+                                                                ch: Option[CallbackHandler],
+                                                                wrConf: WriteConfig)
                                                                (implicit wr: InfluxWriter[T], conf: InfluxConfig) extends ForeachWriter[T] {
 
   private[this] var influx: UrlIOClient = _
-  private[this] var meas: Measurement[T] = _
+  private[this] var meas: UrlIOClient#Measurement[T] = _
 
   override def open(partitionId: Long, version: Long): Boolean = {
     influx = InfluxIO(conf)
@@ -52,12 +48,19 @@ private[streaming] final class InfluxForeachWriter[T: ClassTag](dbName: String,
     true
   }
 
-  override def process(value: T): Unit =
-    meas.write(value, consistency, precision, retentionPolicy) match {
-      case Success(v)  => onSuccess(v)
-      case Failure(ex) => onFailure(ex)
+  override def process(value: T): Unit = {
+    ch match {
+      case Some(h) =>
+        meas.write(value, wrConf.consistency, wrConf.precision, wrConf.retentionPolicy) match {
+          case Success(Right(code)) => h.onSuccess(code)
+          case Success(Left(ex))    => h.onApplicationFailure(ex)
+          case Failure(ex)          => h.onNetworkFailure(ex)
+        }
+      case _ =>
+        meas.write(value, wrConf.consistency, wrConf.precision, wrConf.retentionPolicy)
     }
 
-  override def close(errorOrNull: Throwable): Unit =
-    influx.close()
+  }
+
+  override def close(errorOrNull: Throwable): Unit = influx.close()
 }

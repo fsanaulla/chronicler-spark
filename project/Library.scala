@@ -3,18 +3,19 @@ import sbt._
 object Library {
   
   object Versions {
-    val chronicler = "0.4.6"
+    val chronicler = "0.5.1"
     val spark      = "2.4.0"
     val scalaTest  = "3.0.5"
     val scalaCheck = "1.14.0"
   }
-  
-  val urlIO      = "com.github.fsanaulla" %% "chronicler-url-io"         % Versions.chronicler
-  val urlMng     = "com.github.fsanaulla" %% "chronicler-url-management" % Versions.chronicler
-  val macros     = "com.github.fsanaulla" %% "chronicler-macros"         % Versions.chronicler
-  val scalaTest  = "org.scalatest"        %% "scalatest"                 % Versions.scalaTest
-  val scalaCheck = "org.scalacheck"       %% "scalacheck"                % Versions.scalaCheck
-  val generators = "com.github.fsanaulla" %% "scalacheck-generators"     % "0.2.0"
+
+  val chroniclerCore = "com.github.fsanaulla" %% "chronicler-core-shared"    % Versions.chronicler
+  val urlIO          = "com.github.fsanaulla" %% "chronicler-url-io"         % Versions.chronicler
+  val urlMng         = "com.github.fsanaulla" %% "chronicler-url-management" % Versions.chronicler
+  val macros         = "com.github.fsanaulla" %% "chronicler-macros"         % Versions.chronicler
+  val scalaTest      = "org.scalatest"        %% "scalatest"                 % Versions.scalaTest
+  val scalaCheck     = "org.scalacheck"       %% "scalacheck"                % Versions.scalaCheck
+  val generators     = "com.github.fsanaulla" %% "scalacheck-generators"     % "0.2.0"
 
   val core: List[ModuleID] = List(
     "org.apache.spark" %% "spark-core" % Versions.spark % Provided,

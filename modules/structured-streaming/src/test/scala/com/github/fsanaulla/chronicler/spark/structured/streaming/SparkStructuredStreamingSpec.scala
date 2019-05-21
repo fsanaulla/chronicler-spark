@@ -16,6 +16,7 @@
 
 package com.github.fsanaulla.chronicler.spark.structured.streaming
 
+import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.spark.tests.DockerizedInfluxDB
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
@@ -50,7 +51,7 @@ class SparkStructuredStreamingSpec
     implicit lazy val influxConf: InfluxConfig =
       InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
     implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
-      override def write(obj: Row): String = {
+      override def write(obj: Row): ErrorOr[String] = {
         val sb = StringBuilder.newBuilder
 
         sb.append(s"name=${obj(0)}")
@@ -60,13 +61,13 @@ class SparkStructuredStreamingSpec
           .append(obj(1))
           .append("\"")
 
-        sb.toString()
+        Right(sb.toString())
       }
     }
 
     "Influx" should "create database" in {
       val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
-      management.createDatabase(dbName).success.value.isSuccess shouldEqual true
+      management.createDatabase(dbName).success.value.right.get shouldEqual 200
       management.close()
     }
 
@@ -92,10 +93,11 @@ class SparkStructuredStreamingSpec
       val db = influx.database(dbName)
 
       eventually {
-        db.readJs(s"SELECT * FROM $meas")
+        db.readJson(s"SELECT * FROM $meas")
           .success
           .value
-          .queryResult
+          .right
+          .get
           .length shouldEqual 20
       }
 
