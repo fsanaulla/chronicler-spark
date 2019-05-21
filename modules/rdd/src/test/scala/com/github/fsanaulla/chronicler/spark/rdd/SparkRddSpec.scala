@@ -18,8 +18,7 @@ package com.github.fsanaulla.chronicler.spark.rdd
 
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.macros.Influx
-import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
+import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
@@ -50,15 +49,15 @@ class SparkRddSpec
   "Influx" should "create database" in {
     val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
 
-    mng.createDatabase(db).success.value.isSuccess shouldEqual true
+    mng.createDatabase(db).success.value.right.get shouldEqual 200
 
     mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB using writer" in {
     sc
-      .parallelize(Models.Entity.samples())
-      .saveToInfluxDB(db, meas, onFailure = ex => throw ex)
+      .parallelize(Entity.samples())
+      .saveToInfluxDB(db, meas)
       .shouldEqual {}
   }
 
@@ -66,7 +65,7 @@ class SparkRddSpec
     val cl = InfluxIO(influxConf)
 
     eventually {
-      cl.database(db).readJs(s"SELECT * FROM $meas").success.value.queryResult.length shouldEqual 20
+      cl.database(db).readJson(s"SELECT * FROM $meas").success.value.right.get.length shouldEqual 20
     }
 
     cl.close() shouldEqual {}

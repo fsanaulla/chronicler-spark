@@ -16,10 +16,9 @@
 
 package com.github.fsanaulla.chronicler.spark.streaming
 
-import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxFormatter}
-import com.github.fsanaulla.chronicler.macros.Influx
-import com.github.fsanaulla.chronicler.spark.tests.Models.Entity
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Models}
+import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
+import com.github.fsanaulla.chronicler.macros.auto._
+import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
 import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
@@ -50,18 +49,17 @@ class SparkStreamingSpec
 
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
-  implicit val wr: InfluxFormatter[Entity] = Influx.formatter[Entity]
 
   "Influx" should "create database" in {
     val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
 
-    mng.createDatabase(dbName).success.value.isSuccess shouldEqual true
+    mng.createDatabase(dbName).success.value.right.get shouldEqual 200
 
     mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB" in {
-    val rdd = sc.parallelize(Models.Entity.samples())
+    val rdd = sc.parallelize(Entity.samples())
 
     // define stream
     ssc
@@ -80,7 +78,7 @@ class SparkStreamingSpec
     val cl = InfluxIO(influxConf)
 
     eventually {
-      cl.database(dbName).readJs("SELECT * FROM meas").success.value.queryResult.length shouldEqual 20
+      cl.database(dbName).readJson("SELECT * FROM meas").success.value.right.get.length shouldEqual 20
     }
 
     cl.close() shouldEqual {}

@@ -16,8 +16,8 @@
 
 package com.github.fsanaulla.chronicler.spark
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
-import com.github.fsanaulla.chronicler.core.model.{InfluxWriter, WriteResult}
+import com.github.fsanaulla.chronicler.core.model.InfluxWriter
+import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
 import com.github.fsanaulla.chronicler.spark.rdd._
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.streaming.dstream.DStream
@@ -39,23 +39,13 @@ package object streaming {
       *
       * @param dbName          - database name
       * @param measName        - measurement name
-      * @param onFailure       - function to handle failed cases
-      * @param onSuccess       - function to handle success case
-      * @param consistency     - consistence level
-      * @param precision       - time precision
-      * @param retentionPolicy - retention policy type
-      * @param wr              - implicit [[InfluxWriter]]
       */
     def saveToInfluxDB(dbName: String,
                        measName: String,
-                       batchSize: Int = 2500,
-                       onFailure: Throwable => Unit = _ => (),
-                       onSuccess: WriteResult => Unit = _ => (),
-                       consistency: Option[Consistency] = None,
-                       precision: Option[Precision] = None,
-                       retentionPolicy: Option[String] = None)
+                       ch: Option[CallbackHandler] = None,
+                       dataInfo: WriteConfig = WriteConfig.default)
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
-      stream.foreachRDD(_.saveToInfluxDB(dbName, measName, batchSize, onFailure, onSuccess, consistency, precision, retentionPolicy))
+      stream.foreachRDD(_.saveToInfluxDB(dbName, measName, ch, dataInfo))
     }
   }
 
