@@ -40,7 +40,7 @@ package object rdd {
       *
       * @param dbName   - database name
       * @param measName - measurement name
-      * @param ch - defined callbacks for responses
+      * @param ch       - defined callbacks for responses
       * @param dataInfo - data characteristics
       */
     def saveToInfluxDB(dbName: String,

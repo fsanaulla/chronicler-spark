@@ -3,7 +3,7 @@ import sbt._
 object Library {
   
   object Versions {
-    val chronicler = "0.5.1"
+    val chronicler = "0.5.5"
     val spark      = "2.4.0"
     val scalaTest  = "3.0.5"
     val scalaCheck = "1.14.0"

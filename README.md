@@ -26,6 +26,17 @@ libraryDependencies += "com.github.fsanaulla" %% "chronicler-spark-streaming" % 
 
 ## Usage
 
+Default configuration: 
+```
+final case class InfluxConfig(
+    host: String,
+    port: Int = 8086,
+    credentials: Option[InfluxCredentials] = None,
+    compress: Boolean = false,
+    ssl: Boolean = false)
+```
+It's recommended to enable data compression to decrease network traffic.
+
 For `RDD[T]`:
 
 ```

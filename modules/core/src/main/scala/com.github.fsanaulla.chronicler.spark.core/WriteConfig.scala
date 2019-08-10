@@ -16,7 +16,7 @@
 
 package com.github.fsanaulla.chronicler.spark.core
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
+import com.github.fsanaulla.chronicler.core.enums.{Consistencies, Consistency, Precision, Precisions}
 
 /**
   * Configuration for write operation
@@ -27,11 +27,11 @@ import com.github.fsanaulla.chronicler.core.enums.{Consistency, Precision}
   * @param retentionPolicy - data retention policy
   */
 final case class WriteConfig(batchSize: Int,
-                             consistency: Option[Consistency],
-                             precision: Option[Precision],
+                             consistency: Consistency,
+                             precision: Precision,
                              retentionPolicy: Option[String])
 
 object WriteConfig {
   // default entry
-  val default = WriteConfig(2500, None, None, None)
+  val default = WriteConfig(2500, Consistencies.None, Precisions.None, None)
 }
