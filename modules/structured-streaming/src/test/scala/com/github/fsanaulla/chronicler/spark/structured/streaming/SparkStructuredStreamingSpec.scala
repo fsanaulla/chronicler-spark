@@ -49,7 +49,7 @@ class SparkStructuredStreamingSpec
     val meas = "meas"
 
     implicit lazy val influxConf: InfluxConfig =
-      InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
+      InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
     implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
       override def write(obj: Row): ErrorOr[String] = {
         val sb = StringBuilder.newBuilder
@@ -66,7 +66,7 @@ class SparkStructuredStreamingSpec
     }
 
     "Influx" should "create database" in {
-      val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
+      val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
       management.createDatabase(dbName).success.value.right.get shouldEqual 200
       management.close()
     }

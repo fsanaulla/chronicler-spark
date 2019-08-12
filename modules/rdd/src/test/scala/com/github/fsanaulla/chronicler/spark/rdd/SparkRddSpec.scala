@@ -47,7 +47,7 @@ class SparkRddSpec
   implicit val wr: InfluxWriter[Entity] = Influx.writer[Entity]
 
   "Influx" should "create database" in {
-    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
+    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
 
     mng.createDatabase(db).success.value.right.get shouldEqual 200
 

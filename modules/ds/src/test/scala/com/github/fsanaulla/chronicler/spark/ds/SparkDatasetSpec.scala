@@ -48,12 +48,12 @@ class SparkDatasetSpec
   val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")), gzipped = false, None)
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
   import spark.implicits._
 
   "Influx" should "create database" in {
-    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")), None)
+    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
 
     mng.createDatabase(dbName).success.value.right.get shouldEqual 200
 
