@@ -31,7 +31,7 @@ package object rdd {
     * Extension that will provide static methods for saving RDDs to InfluxDB
     *
     * @param rdd - [[org.apache.spark.rdd.RDD]]
-    * @tparam T - inner type
+    * @tparam T  - inner type
     */
   implicit final class RddOps[T](private val rdd: RDD[T]) extends AnyVal {
 
