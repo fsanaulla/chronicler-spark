@@ -51,6 +51,7 @@ object Settings extends LibraryManagementSyntax {
     ),
     pgpPublicRing := file("pubring.asc"),
     pgpSecretRing := file("secring.asc"),
-    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
+    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray),
+    updateOptions := updateOptions.value.withGigahorse(false)
   )
 }
