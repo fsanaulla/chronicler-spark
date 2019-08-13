@@ -33,9 +33,6 @@ before_install:
 
 jobs:
   include:
-    - stage: release
-      script: chmod 777 scripts/release.sh && ./scripts/release.sh
-      scala: 2.12.8
     - stage: deploy_2.11
       script: ./scripts/publish.sh
       name: "Deploying scala 2.11.8 artifacts"
@@ -44,12 +41,15 @@ jobs:
       script: ./scripts/publish.sh
       name: "Deploying scala 2.12.8 artifacts"
       scala: 2.12.8
+    - stage: release
+      script: chmod 777 scripts/release.sh && ./scripts/release.sh
+      scala: 2.12.8
 
 stages:
   - name: test
-  - name: release
-    if: branch = master AND type != pull_request
   - name: deploy_2.11
     if: branch = master AND type != pull_request
   - name: deploy_2.12
+    if: branch = master AND type != pull_request
+  - name: release
     if: branch = master AND type != pull_request
