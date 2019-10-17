@@ -14,11 +14,10 @@ filename="${version}.md"
 release_note=`cat changelog/${filename}`
 branch=$(git rev-parse --abbrev-ref HEAD)
 repo_full_name=$(git config --get remote.origin.url | sed 's/.*:\/\/github.com\///;s/.git$//')
-release_name="chronicler-spark $version"
 json_data=$( jq -n \
                   --arg tn "$version" \
                   --arg tc "$branch" \
-                  --arg nm "$release_name" \
+                  --arg nm "$version" \
                   --arg bd "$release_note" \
                   '{tag_name: $tn, target_commitish: $tc, name: $nm, body: $bd, draft: false, prerelease: false}' )
 
