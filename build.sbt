@@ -5,6 +5,7 @@ lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2019", "Faiaz
 lazy val `chronicler-spark` = project
   .in(file("."))
   .settings(Settings.common: _*)
+  .settings(Settings.publish: _*)
   .aggregate(
     sparkCore,
     sparkRdd,
