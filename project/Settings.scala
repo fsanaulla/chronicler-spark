@@ -1,7 +1,7 @@
-import com.typesafe.sbt.SbtPgp.autoImportImpl.{pgpPassphrase, pgpPublicRing, pgpSecretRing, useGpg}
+import com.jsuereth.sbtpgp.SbtPgp.autoImport._
 import sbt.Keys._
 import sbt.librarymanagement.{Developer, LibraryManagementSyntax, ScmInfo}
-import sbt.{Opts, file, url}
+import sbt.{Opts, url}
 
 object Settings extends LibraryManagementSyntax {
 
@@ -15,14 +15,14 @@ object Settings extends LibraryManagementSyntax {
   }
 
   val common = Seq(
-    scalaVersion := "2.12.8",
+    scalaVersion := "2.12.10",
     organization := "com.github.fsanaulla",
     scalacOptions ++= Seq(
       "-deprecation",
       "-feature",
       "-encoding", "utf-8"
     ),
-    crossScalaVersions := Seq("2.11.8", scalaVersion.value),
+    crossScalaVersions := Seq("2.11.12", scalaVersion.value),
     homepage := Some(url("https://github.com/fsanaulla/chronicler-spark")),
     licenses += "Apache-2.0" -> url(apacheUrl),
     developers += Developer(
@@ -30,7 +30,7 @@ object Settings extends LibraryManagementSyntax {
       name = Owner.name,
       email = Owner.email,
       url = url(Owner.github)
-    ),
+    )
   )
 
 
@@ -48,9 +48,9 @@ object Settings extends LibraryManagementSyntax {
         Opts.resolver.sonatypeSnapshots
       else
         Opts.resolver.sonatypeStaging
-    ),
+    )/*,
     pgpPublicRing := file("pubring.asc"),
     pgpSecretRing := file("secring.asc"),
-    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
+    pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)*/
   )
 }

@@ -37,7 +37,14 @@ class SparkStreamingSpec
     with IntegrationPatience
     with TryValues {
 
-  val conf: SparkConf = new SparkConf()
+  override def afterAll(): Unit = {
+    mng.close()
+    io.close()
+    ssc.stop(stopSparkContext = true, stopGracefully = true)
+    super.afterAll()
+  }
+
+  lazy val conf: SparkConf = new SparkConf()
     .setAppName("Rdd")
     .setMaster("local[*]")
 
@@ -49,13 +56,11 @@ class SparkStreamingSpec
 
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+  lazy val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
+  lazy val io = InfluxIO(influxConf)
 
   "Influx" should "create database" in {
-    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
-
     mng.createDatabase(dbName).success.value.right.get shouldEqual 200
-
-    mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB" in {
@@ -70,17 +75,11 @@ class SparkStreamingSpec
 
     // necessary stub
     Thread.sleep(22 * 1000)
-
-    ssc.stop()
   }
 
   it should "retrieve saved items" in {
-    val cl = InfluxIO(influxConf)
-
     eventually {
-      cl.database(dbName).readJson("SELECT * FROM meas").success.value.right.get.length shouldEqual 20
+      io.database(dbName).readJson("SELECT * FROM meas").success.value.right.get.length shouldEqual 20
     }
-
-    cl.close() shouldEqual {}
   }
 }

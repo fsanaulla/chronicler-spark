@@ -35,6 +35,13 @@ class SparkDatasetSpec
     with DockerizedInfluxDB
     with TryValues {
 
+  override def afterAll(): Unit = {
+    mng.close()
+    io.close()
+    spark.close()
+    super.afterAll()
+  }
+
   val conf: SparkConf = new SparkConf()
     .setAppName("Rdd")
     .setMaster("local[*]")
@@ -50,14 +57,13 @@ class SparkDatasetSpec
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
+  lazy val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
+  lazy val io = InfluxIO(influxConf)
+
   import spark.implicits._
 
   "Influx" should "create database" in {
-    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
-
     mng.createDatabase(dbName).success.value.right.get shouldEqual 200
-
-    mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB" in {
@@ -68,12 +74,8 @@ class SparkDatasetSpec
   }
 
   it should "retrieve saved items" in {
-    val cl = InfluxIO(influxConf)
-
     eventually {
-      cl.database(dbName).readJson("SELECT * FROM meas").success.value.right.get.length shouldEqual 20
+      io.database(dbName).readJson("SELECT * FROM meas").success.value.right.get.length shouldEqual 20
     }
-
-    cl.close() shouldEqual {}
   }
 }

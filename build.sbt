@@ -5,6 +5,13 @@ lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2019", "Faiaz
 lazy val `chronicler-spark` = project
   .in(file("."))
   .settings(Settings.common: _*)
+  .aggregate(
+    sparkCore,
+    sparkRdd,
+    sparkDs,
+    sparkStreaming,
+    sparkStructuredStreaming
+  )
 
 lazy val sparkCore = project
   .in(file("modules/core"))

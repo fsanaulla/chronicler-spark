@@ -36,6 +36,13 @@ class SparkStructuredStreamingSpec
     with IntegrationPatience
     with TryValues {
 
+  override def afterAll(): Unit = {
+    mng.close()
+    io.close()
+    spark.stop()
+    super.afterAll()
+  }
+
     val conf: SparkConf = new SparkConf()
       .setAppName("ss")
       .setMaster("local[*]")
@@ -65,10 +72,11 @@ class SparkStructuredStreamingSpec
       }
     }
 
-    "Influx" should "create database" in {
-      val management = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
-      management.createDatabase(dbName).success.value.right.get shouldEqual 200
-      management.close()
+  lazy val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
+  lazy val io = InfluxIO(influxConf)
+
+  "Influx" should "create database" in {
+      mng.createDatabase(dbName).success.value.right.get shouldEqual 200
     }
 
     it should "save structured stream to InfluxDB" in {
@@ -89,8 +97,7 @@ class SparkStructuredStreamingSpec
     }
 
     it should "retrieve saved items" in {
-      val influx = InfluxIO(influxConf)
-      val db = influx.database(dbName)
+      val db = io.database(dbName)
 
       eventually {
         db.readJson(s"SELECT * FROM $meas")
@@ -100,7 +107,5 @@ class SparkStructuredStreamingSpec
           .get
           .length shouldEqual 20
       }
-
-      influx.close()
     }
 }

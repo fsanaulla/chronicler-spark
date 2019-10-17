@@ -34,9 +34,17 @@ class SparkRddSpec
     with DockerizedInfluxDB
     with TryValues {
 
+  override def afterAll(): Unit = {
+    mng.close()
+    io.close()
+    sc.stop()
+    super.afterAll()
+  }
+
   val conf: SparkConf = new SparkConf()
     .setAppName("Rdd")
     .setMaster("local[*]")
+
   val sc: SparkContext = new SparkContext(conf)
 
   val db = "db"
@@ -44,14 +52,15 @@ class SparkRddSpec
 
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+
   implicit val wr: InfluxWriter[Entity] = Influx.writer[Entity]
 
+  lazy val mng = InfluxMng(influxConf)
+  lazy val io = InfluxIO(influxConf)
+
+
   "Influx" should "create database" in {
-    val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
-
     mng.createDatabase(db).success.value.right.get shouldEqual 200
-
-    mng.close() shouldEqual {}
   }
 
   it should "save rdd to InfluxDB using writer" in {
@@ -62,12 +71,8 @@ class SparkRddSpec
   }
 
   it should "retrieve saved items" in {
-    val cl = InfluxIO(influxConf)
-
     eventually {
-      cl.database(db).readJson(s"SELECT * FROM $meas").success.value.right.get.length shouldEqual 20
+      io.database(db).readJson(s"SELECT * FROM $meas").success.value.right.get.length shouldEqual 20
     }
-
-    cl.close() shouldEqual {}
   }
 }
