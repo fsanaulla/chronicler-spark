@@ -15,9 +15,9 @@ release_note=`cat changelog/${filename}`
 branch=$(git rev-parse --abbrev-ref HEAD)
 repo_full_name=$(git config --get remote.origin.url | sed 's/.*:\/\/github.com\///;s/.git$//')
 json_data=$( jq -n \
-                  --arg tn "$version" \
+                  --arg tn "$tag" \
                   --arg tc "$branch" \
-                  --arg nm "$version" \
+                  --arg nm "$tag" \
                   --arg bd "$release_note" \
                   '{tag_name: $tn, target_commitish: $tc, name: $nm, body: $bd, draft: false, prerelease: false}' )
 
