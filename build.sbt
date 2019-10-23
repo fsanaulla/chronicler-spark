@@ -6,7 +6,7 @@ lazy val `chronicler-spark` = project
   .in(file("."))
   .settings(Settings.common: _*)
   .settings(Settings.publish: _*)
-  .settings(publish := {})
+  .settings(skip in publish := true)
   .aggregate(
     sparkCore,
     sparkRdd,

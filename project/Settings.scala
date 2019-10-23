@@ -1,7 +1,8 @@
 import com.jsuereth.sbtpgp.SbtPgp.autoImport._
 import sbt.Keys._
+import sbt._
 import sbt.librarymanagement.{Developer, LibraryManagementSyntax, ScmInfo}
-import sbt.{Opts, file, url}
+import xerial.sbt.Sonatype.autoImport._
 
 object Settings extends LibraryManagementSyntax {
 
@@ -43,12 +44,14 @@ object Settings extends LibraryManagementSyntax {
       )
     ),
     pomIncludeRepository := (_ => false),
-    publishTo := Some(
-      if (isSnapshot.value)
-        Opts.resolver.sonatypeSnapshots
-      else
-        Opts.resolver.sonatypeStaging
-    ),
+//    publishTo := Some(
+//      if (isSnapshot.value)
+//        Opts.resolver.sonatypeSnapshots
+//      else
+//        Opts.resolver.sonatypeStaging
+//    ),
+    publishTo := sonatypePublishToBundle.value,
+    sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / "target" / "sonatype-staging" / s"${version.value}",
     pgpPublicRing := file("pubring.asc"),
     pgpSecretRing := file("secring.asc"),
     pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
