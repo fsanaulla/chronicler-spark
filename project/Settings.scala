@@ -44,12 +44,6 @@ object Settings extends LibraryManagementSyntax {
       )
     ),
     pomIncludeRepository := (_ => false),
-//    publishTo := Some(
-//      if (isSnapshot.value)
-//        Opts.resolver.sonatypeSnapshots
-//      else
-//        Opts.resolver.sonatypeStaging
-//    ),
     publishTo := sonatypePublishToBundle.value,
     sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / "target" / "sonatype-staging" / s"${version.value}",
     pgpPublicRing := file("pubring.asc"),
