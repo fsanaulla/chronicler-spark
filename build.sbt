@@ -84,7 +84,7 @@ lazy val sparkStructuredStreaming = project
     libraryDependencies ++= Seq(
       Library.ds,
       Library.urlMng % Test
-    ) ++ Library.core 
+    ) ++ Library.core
   )
   .dependsOn(sparkCore)
   .dependsOn(tests % "test->test")

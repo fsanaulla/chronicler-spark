@@ -47,6 +47,18 @@ package object streaming {
                       (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       stream.foreachRDD(_.saveToInfluxDB(dbName, measName, ch, dataInfo))
     }
+
+    /**
+      * Write [[DStream]] to InfluxDB
+      *
+      * @param dbName          - database name
+      */
+    def saveToInfluxDB(dbName: String,
+                       ch: Option[CallbackHandler] = None,
+                       dataInfo: WriteConfig = WriteConfig.default)
+                      (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
+      stream.foreachRDD(_.saveToInfluxDB(dbName, ch, dataInfo))
+    }
   }
 
 }

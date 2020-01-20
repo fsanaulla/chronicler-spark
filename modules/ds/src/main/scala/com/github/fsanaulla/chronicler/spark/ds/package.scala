@@ -48,5 +48,18 @@ package object ds {
       // it throw compiler error when using it, on ds
       ds.rdd.saveToInfluxDB(dbName, measName, ch, dataInfo)
     }
+
+    /**
+      * Write Spark [[Dataset]] to InfluxDB
+      *
+      * @param dbName          - database name
+      */
+    def saveToInfluxDB(dbName: String,
+                       ch: Option[CallbackHandler] = None,
+                       dataInfo: WriteConfig = WriteConfig.default)
+                      (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
+      // it throw compiler error when using it, on ds
+      ds.rdd.saveToInfluxDB(dbName, ch, dataInfo)
+    }
   }
 }

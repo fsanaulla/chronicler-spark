@@ -34,12 +34,27 @@ package object streaming {
       * @param measName        - measurement name
       * @param wr              - implicit [[InfluxWriter]]
       */
-    def saveToInfluxDB(dbName: String,
-                       measName: String,
-                       ch: Option[CallbackHandler] = None,
-                       wrConf: WriteConfig = WriteConfig.default)
-                      (implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): DataStreamWriter[T] = {
-      dsw.foreach(new InfluxForeachWriter[T](dbName, measName, ch, wrConf))
+    def saveToInfluxDB(
+        dbName: String,
+        measName: String,
+        ch: Option[CallbackHandler] = None,
+        wrConf: WriteConfig = WriteConfig.default
+    )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): DataStreamWriter[T] = {
+      dsw.foreach(new InfluxForeachMeasurementWriter[T](dbName, measName, ch, wrConf))
+    }
+
+    /**
+      * Write Spark structured streaming to InfluxDB
+      *
+      * @param dbName          - database name
+      * @param wr              - implicit [[InfluxWriter]]
+      */
+    def saveToInfluxDB(
+        dbName: String,
+        ch: Option[CallbackHandler] = None,
+        wrConf: WriteConfig = WriteConfig.default
+    )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): DataStreamWriter[T] = {
+      dsw.foreach(new InfluxForeachWriter[T](dbName, ch, wrConf))
     }
   }
 }
