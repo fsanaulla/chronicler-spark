@@ -16,7 +16,7 @@ object Settings extends LibraryManagementSyntax {
   }
 
   val common = Seq(
-    scalaVersion := "2.11.10",
+    scalaVersion := "2.12.10",
     organization := "com.github.fsanaulla",
     scalacOptions ++= Seq(
       "-deprecation",
