@@ -66,7 +66,7 @@ class SparkRddSpec
   it should "save rdd to InfluxDB using writer" in {
     sc
       .parallelize(Entity.samples())
-      .saveToInfluxDB(db, meas)
+      .saveToInfluxDBMeas(db, meas)
       .shouldEqual {}
   }
 

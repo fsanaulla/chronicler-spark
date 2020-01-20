@@ -41,31 +41,29 @@ package object rdd {
         handler: Option[CallbackHandler],
         response: Try[ErrorOr[Int]]
     ): Unit =
-      handler match {
-        // define callbacks if defined
-        case Some(rh) =>
-          response match {
-            case Success(Right(code)) => rh.onSuccess(code)
-            // application level issues
-            case Success(Left(ex)) => rh.onApplicationFailure(ex)
-            // connection/network level issues
-            case Failure(ex) => rh.onNetworkFailure(ex)
-          }
-        case _ => ()
+      if (handler.isDefined) {
+        val Some(rh) = handler
+        response match {
+          case Success(Right(code)) => rh.onSuccess(code)
+          // application level issues
+          case Success(Left(ex)) => rh.onApplicationFailure(ex)
+          // connection/network level issues
+          case Failure(ex) => rh.onNetworkFailure(ex)
+        }
       }
 
     /**
-      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB
+      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB, specifying database measurement
       *
       * @param dbName   - database name
       * @param measName - measurement name
-      * @param ch       - defined callbacks for responses
+      * @param handler  - defined callbacks for responses
       * @param dataInfo - data characteristics
       */
-    def saveToInfluxDB(
+    def saveToInfluxDBMeas(
         dbName: String,
         measName: String,
-        ch: Option[CallbackHandler] = None,
+        handler: Option[CallbackHandler] = None,
         dataInfo: WriteConfig = WriteConfig.default
     )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>
@@ -81,7 +79,7 @@ package object rdd {
           )
 
           // check if rh is defined
-          handleResponse(ch, response)
+          handleResponse(handler, response)
         }
 
         client.close()
@@ -89,15 +87,15 @@ package object rdd {
     }
 
     /**
-      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB
+      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB, with measurements that generated dynamicly
       *
       * @param dbName   - database name
-      * @param ch       - defined callbacks for responses
+      * @param handler       - defined callbacks for responses
       * @param dataInfo - data characteristics
       */
     def saveToInfluxDB(
         dbName: String,
-        ch: Option[CallbackHandler] = None,
+        handler: Option[CallbackHandler],
         dataInfo: WriteConfig = WriteConfig.default
     )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>
@@ -116,7 +114,7 @@ package object rdd {
                 dataInfo.retentionPolicy
               )
             )
-          handleResponse(ch, response)
+          handleResponse(handler, response)
         }
 
         client.close()

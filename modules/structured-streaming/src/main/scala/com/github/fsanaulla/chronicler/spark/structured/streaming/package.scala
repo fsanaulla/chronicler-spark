@@ -34,7 +34,7 @@ package object streaming {
       * @param measName        - measurement name
       * @param wr              - implicit [[InfluxWriter]]
       */
-    def saveToInfluxDB(
+    def saveToInfluxDBMeas(
         dbName: String,
         measName: String,
         ch: Option[CallbackHandler] = None,
