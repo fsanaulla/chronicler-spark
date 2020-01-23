@@ -1,1 +1,0 @@
-addCommandAlias("fullRelease", ";clean;publishSigned;sonatypeRelease")
