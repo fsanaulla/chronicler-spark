@@ -33,5 +33,5 @@ final case class WriteConfig(batchSize: Int,
 
 object WriteConfig {
   // default entry
-  val default = WriteConfig(2500, Consistencies.None, Precisions.None, None)
+  val default: WriteConfig = WriteConfig(2500, Consistencies.None, Precisions.None, None)
 }

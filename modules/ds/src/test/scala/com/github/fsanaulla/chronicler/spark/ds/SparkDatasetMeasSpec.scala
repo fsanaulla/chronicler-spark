@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.fsanaulla.chronicler.spark.streaming
+package com.github.fsanaulla.chronicler.spark.ds
 
 import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
 import com.github.fsanaulla.chronicler.macros.auto._
@@ -22,34 +22,34 @@ import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
 
-import scala.collection.mutable
-
-class SparkStreamingSpec
+class SparkDatasetMeasSpec
     extends FlatSpec
     with Matchers
-    with DockerizedInfluxDB
     with Eventually
     with IntegrationPatience
+    with DockerizedInfluxDB
     with TryValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    ssc.stop(stopSparkContext = true, stopGracefully = true)
+    spark.close()
     super.afterAll()
   }
 
-  lazy val conf: SparkConf = new SparkConf()
+  val conf: SparkConf = new SparkConf()
     .setAppName("Rdd")
     .setMaster("local[*]")
 
-  val sc: SparkContext = new SparkContext(conf)
-  val ssc              = new StreamingContext(sc, Seconds(1))
+  val spark: SparkSession = SparkSession
+    .builder()
+    .config(conf)
+    .getOrCreate()
 
   val dbName = "db"
   val meas   = "meas"
@@ -60,22 +60,18 @@ class SparkStreamingSpec
   lazy val mng: UrlManagementClient = InfluxMng(influxConf)
   lazy val io: UrlIOClient          = InfluxIO(influxConf)
 
+  import spark.implicits._
+
   "Influx" should "create database" in {
     mng.createDatabase(dbName).success.value.right.get shouldEqual 200
   }
 
   it should "save rdd to InfluxDB" in {
-    val rdd = sc.parallelize(Entity.samples())
-
-    // define stream
-    ssc
-      .queueStream(mutable.Queue(rdd))
+    Entity
+      .samples()
+      .toDS()
       .saveToInfluxDBMeas(dbName, meas)
-
-    ssc.start()
-
-    // necessary stub
-    Thread.sleep(22 * 1000)
+      .shouldEqual {}
   }
 
   it should "retrieve saved items" in {

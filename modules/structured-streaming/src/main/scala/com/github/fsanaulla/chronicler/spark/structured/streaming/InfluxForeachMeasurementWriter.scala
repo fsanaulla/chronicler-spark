@@ -23,30 +23,34 @@ import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.sql.ForeachWriter
 
 import scala.reflect.ClassTag
-import scala.util.{Failure, Success}
 
-private[streaming] final class InfluxForeachWriter[T: ClassTag](
+/**
+  * Influx foreach writer for structured streaming
+  *
+  * @param dbName          - database name
+  * @param measName        - measurement name
+  * @param wr              - implicit influx writer
+  * @param conf            - chronicler influx config
+  */
+private[streaming] final class InfluxForeachMeasurementWriter[T: ClassTag](
     dbName: String,
+    measName: String,
     ch: Option[CallbackHandler],
     wrConf: WriteConfig
 )(implicit wr: InfluxWriter[T], conf: InfluxConfig)
-    extends ForeachWriter[T]
-    with InfluxForeachWriterBase {
+    extends ForeachWriter[T] with InfluxForeachWriterBase {
 
-  private[this] var influx: UrlIOClient      = _
-  private[this] var db: UrlIOClient#Database = _
+  private[this] var influx: UrlIOClient              = _
+  private[this] var meas: UrlIOClient#Measurement[T] = _
 
   override def open(partitionId: Long, version: Long): Boolean = {
     influx = InfluxIO(conf)
-    db = influx.database(dbName)
+    meas = influx.measurement[T](dbName, measName)
     true
   }
 
   override def process(value: T): Unit = {
-    val response = wr
-      .write(value)
-      .fold(Failure(_), Success(_))
-      .flatMap(db.writeNative(_, wrConf.consistency, wrConf.precision, wrConf.retentionPolicy))
+    val response = meas.write(value, wrConf.consistency, wrConf.precision, wrConf.retentionPolicy)
     handleResponse(ch, response)
   }
 
