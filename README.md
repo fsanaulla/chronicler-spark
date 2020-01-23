@@ -44,6 +44,9 @@ import com.github.fsanaulla.chronicler.spark.rdd._
 
 val rdd: RDD[T] = _
 rdd.saveToInfluxDB("dbName", "measurementName")
+
+// to save with dynamicly generated measurement
+rdd.saveToInfluxDBMeas("dbName")
 ```
 For `Dataset[T]`:
 ```
@@ -51,6 +54,9 @@ import com.github.fsanaulla.chronicler.spark.ds._
 
 val ds: Dataset[T] = _
 ds.saveToInfluxDB("dbName", "measurementName")
+
+// to save with dynamicly generated measurement
+ds.saveToInfluxDBMeas("dbName")
 ```
 For `DataStreamWriter[T]`
 ```
@@ -58,6 +64,9 @@ import com.github.fsanaulla.chronicler.spark.structured.streaming._
 
 val structStream: DataStreamWriter[T] = _
 val saved = structStream.saveToInfluxDB("dbName", "measurementName")
+
+// to save with dynamicly generated measurement
+val saved = structStream.saveToInfluxDBMeas("dbName")
 ..
 saved.start().awaitTermination()
 
@@ -69,4 +78,5 @@ import com.github.fsanaulla.chronicler.spark.streaming._
 
 val stream: DStream[T] = _
 stream.saveToInfluxDB("dbName", "measurementName")
+stream,saveToInfluxDBMeas("dbName")
 ```

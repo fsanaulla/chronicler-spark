@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package com.github.fsanaulla.chronicler.spark.streaming
+package com.github.fsanaulla.chronicler.spark.structured.streaming
 
-import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
-import com.github.fsanaulla.chronicler.macros.auto._
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
+import com.github.fsanaulla.chronicler.core.alias.ErrorOr
+import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
+import com.github.fsanaulla.chronicler.spark.tests.DockerizedInfluxDB
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SparkSession}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
 
-import scala.collection.mutable
-
-class SparkStreamingSpec
+class SparkStructuredStreamingDBSpec
     extends FlatSpec
     with Matchers
     with DockerizedInfluxDB
@@ -40,22 +39,40 @@ class SparkStreamingSpec
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    ssc.stop(stopSparkContext = true, stopGracefully = true)
+    spark.stop()
     super.afterAll()
   }
 
-  lazy val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
+  val conf: SparkConf = new SparkConf()
+    .setAppName("ss")
     .setMaster("local[*]")
 
-  val sc: SparkContext = new SparkContext(conf)
-  val ssc              = new StreamingContext(sc, Seconds(1))
+  val spark: SparkSession = SparkSession
+    .builder()
+    .config(conf)
+    .getOrCreate()
 
   val dbName = "db"
   val meas   = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
+
+  implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
+    override def write(obj: Row): ErrorOr[String] = {
+      val sb = StringBuilder.newBuilder
+
+      sb.append("meas,")
+        .append(s"name=${obj(0)}")
+        .append(" ")
+        .append("surname=")
+        .append("\"")
+        .append(obj(1))
+        .append("\"")
+
+      Right(sb.toString())
+    }
+  }
 
   lazy val mng: UrlManagementClient = InfluxMng(influxConf)
   lazy val io: UrlIOClient          = InfluxIO(influxConf)
@@ -64,29 +81,27 @@ class SparkStreamingSpec
     mng.createDatabase(dbName).success.value.right.get shouldEqual 200
   }
 
-  it should "save rdd to InfluxDB" in {
-    val rdd = sc.parallelize(Entity.samples())
+  it should "save structured stream to InfluxDB" in {
+    val schema = StructType(
+      StructField("name", StringType) :: StructField("surname", StringType) :: Nil
+    )
 
-    // define stream
-    ssc
-      .queueStream(mutable.Queue(rdd))
-      .saveToInfluxDBMeas(dbName, meas)
+    spark.readStream
+      .schema(schema)
+      .csv(getClass.getResource("/structured").getPath)
+      .writeStream
+      .saveToInfluxDB(dbName)
+      .start()
+      .awaitTermination(1000 * 10)
 
-    ssc.start()
-
-    // necessary stub
-    Thread.sleep(22 * 1000)
+    succeed
   }
 
   it should "retrieve saved items" in {
+    val db = io.database(dbName)
+
     eventually {
-      io.database(dbName)
-        .readJson("SELECT * FROM meas")
-        .success
-        .value
-        .right
-        .get
-        .length shouldEqual 20
+      db.readJson(s"SELECT * FROM $meas").success.value.right.get.length shouldEqual 20
     }
   }
 }

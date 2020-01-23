@@ -16,14 +16,16 @@
 
 package com.github.fsanaulla.chronicler.spark.core
 
-final case class CallbackHandler(onSuccess: Int => Unit,
-                                 onApplicationFailure: Throwable => Unit,
-                                 onNetworkFailure: Throwable => Unit)
+final case class CallbackHandler(
+    onSuccess: Int => Unit,
+    onApplicationFailure: Throwable => Unit,
+    onNetworkFailure: Throwable => Unit
+)
 
 object CallbackHandler {
-  val empty = CallbackHandler(_ => {}, _ => {}, _ => {})
+  val empty: CallbackHandler = CallbackHandler(_ => (), _ => (), _ => ())
 
-  def withSuccess(f: Int => Unit): CallbackHandler = empty.copy(onSuccess = f)
-  def withAppFailure(f: Throwable => Unit): CallbackHandler = empty.copy(onApplicationFailure = f)
+  def withSuccess(f: Int => Unit): CallbackHandler              = empty.copy(onSuccess = f)
+  def withAppFailure(f: Throwable => Unit): CallbackHandler     = empty.copy(onApplicationFailure = f)
   def withNetworkFailure(f: Throwable => Unit): CallbackHandler = empty.copy(onNetworkFailure = f)
 }
