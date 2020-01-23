@@ -16,19 +16,19 @@
 
 package com.github.fsanaulla.chronicler.spark.ds
 
-import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
-import com.github.fsanaulla.chronicler.macros.auto._
+import com.github.fsanaulla.chronicler.core.alias.ErrorOr
+import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
 import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
-import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
-import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
+import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
+import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FlatSpec, Matchers, TryValues}
 
-class SparkDatasetSpec
-  extends FlatSpec
+class SparkDatasetDBSpec
+    extends FlatSpec
     with Matchers
     with Eventually
     with IntegrationPatience
@@ -52,13 +52,18 @@ class SparkDatasetSpec
     .getOrCreate()
 
   val dbName = "db"
-  val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
 
-  lazy val mng = InfluxMng(host, port, Some(InfluxCredentials("admin", "password")))
-  lazy val io = InfluxIO(influxConf)
+  lazy val mng: UrlManagementClient = InfluxMng(influxConf)
+  lazy val io: UrlIOClient          = InfluxIO(influxConf)
+
+  implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
+    override def write(obj: Entity): ErrorOr[String] =
+      Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
+
+  }
 
   import spark.implicits._
 
@@ -67,15 +72,22 @@ class SparkDatasetSpec
   }
 
   it should "save rdd to InfluxDB" in {
-    Entity.samples()
+    Entity
+      .samples()
       .toDS()
-      .saveToInfluxDB(dbName, meas)
+      .saveToInfluxDB(dbName)
       .shouldEqual {}
   }
 
   it should "retrieve saved items" in {
     eventually {
-      io.database(dbName).readJson("SELECT * FROM meas").success.value.right.get.length shouldEqual 20
+      io.database(dbName)
+        .readJson("SELECT * FROM meas")
+        .success
+        .value
+        .right
+        .get
+        .length shouldEqual 20
     }
   }
 }

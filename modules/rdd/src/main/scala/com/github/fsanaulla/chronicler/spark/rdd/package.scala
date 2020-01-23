@@ -95,7 +95,7 @@ package object rdd {
       */
     def saveToInfluxDB(
         dbName: String,
-        handler: Option[CallbackHandler],
+        handler: Option[CallbackHandler] = None,
         dataInfo: WriteConfig = WriteConfig.default
     )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): Unit = {
       rdd.foreachPartition { partition =>

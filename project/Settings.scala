@@ -31,7 +31,8 @@ object Settings extends LibraryManagementSyntax {
       name = Owner.name,
       email = Owner.email,
       url = url(Owner.github)
-    )
+    ),
+    parallelExecution in Test := false
   )
 
 
