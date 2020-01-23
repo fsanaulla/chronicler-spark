@@ -16,10 +16,9 @@ branch=$(git rev-parse --abbrev-ref HEAD)
 repo_full_name=$(git config --get remote.origin.url | sed 's/.*:\/\/github.com\///;s/.git$//')
 json_data=$( jq -n \
                   --arg tn "$tag" \
-                  --arg tc "$branch" \
                   --arg nm "$tag" \
                   --arg bd "$release_note" \
-                  '{tag_name: $tn, target_commitish: $tc, name: $nm, body: $bd, draft: false, prerelease: false}' )
+                  '{tag_name: $tn, target_commitish: "master", name: $nm, body: $bd, draft: false, prerelease: false}' )
 
 echo "Create release $version for repo: $repo_full_name branch: $branch"
 curl --data "$json_data" "https://api.github.com/repos/$repo_full_name/releases?access_token=${GITHUB_TOKEN}"
