@@ -18,7 +18,9 @@ package com.github.fsanaulla.chronicler.spark.structured
 
 import com.github.fsanaulla.chronicler.core.model.InfluxWriter
 import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
+import com.github.fsanaulla.chronicler.spark.rdd._
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.streaming.DataStreamWriter
 
 import scala.reflect.ClassTag
@@ -30,9 +32,9 @@ package object streaming {
     /**
       * Write Spark structured streaming to InfluxDB
       *
-      * @param dbName          - database name
-      * @param measName        - measurement name
-      * @param wr              - implicit [[InfluxWriter]]
+      * @param dbName   - database name
+      * @param measName - measurement name
+      * @param wr       - implicit [[InfluxWriter]]
       */
     def saveToInfluxDBMeas(
         dbName: String,
@@ -40,21 +42,29 @@ package object streaming {
         ch: Option[CallbackHandler] = None,
         wrConf: WriteConfig = WriteConfig.default
     )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): DataStreamWriter[T] = {
-      dsw.foreach(new InfluxForeachMeasurementWriter[T](dbName, measName, ch, wrConf))
+      val save: (Dataset[T], Long) => Unit = {
+        case (ds: Dataset[T], _: Long) => ds.rdd.saveToInfluxDBMeas(dbName, measName, ch, wrConf)
+      }
+
+      dsw.foreachBatch(save)
     }
 
     /**
       * Write Spark structured streaming to InfluxDB
       *
-      * @param dbName          - database name
-      * @param wr              - implicit [[InfluxWriter]]
+      * @param dbName - database name
+      * @param wr     - implicit [[InfluxWriter]]
       */
     def saveToInfluxDB(
         dbName: String,
         ch: Option[CallbackHandler] = None,
         wrConf: WriteConfig = WriteConfig.default
     )(implicit wr: InfluxWriter[T], conf: InfluxConfig, tt: ClassTag[T]): DataStreamWriter[T] = {
-      dsw.foreach(new InfluxForeachWriter[T](dbName, ch, wrConf))
+      val save: (Dataset[T], Long) => Unit = {
+        case (ds: Dataset[T], _: Long) => ds.rdd.saveToInfluxDB(dbName, ch, wrConf)
+      }
+
+      dsw.foreachBatch(save)
     }
   }
 }
