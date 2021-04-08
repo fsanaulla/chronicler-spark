@@ -1,10 +1,10 @@
 import sbt._
 
 object Library {
-  
+
   object Versions {
-    val chronicler = "0.6.4"
-    val spark      = "2.4.4"
+    val chronicler = "0.6.5"
+    val spark      = "2.4.7"
     val scalaTest  = "3.0.8"
     val scalaCheck = "1.14.0"
   }
@@ -22,15 +22,12 @@ object Library {
     urlIO
   )
 
-  val ds: sbt.ModuleID =
-    "org.apache.spark" %% "spark-sql" % Versions.spark % Provided
-
-  val streaming: sbt.ModuleID =
-    "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
+  val ds: sbt.ModuleID        = "org.apache.spark" %% "spark-sql"       % Versions.spark % Provided
+  val streaming: sbt.ModuleID = "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
 
   val itTesting: List[ModuleID] = List(
-    "org.jetbrains"        %  "annotations" % "15.0", // to solve evicted warning
-    "org.testcontainers"   %  "influxdb"    % "1.7.3" exclude("org.jetbrains", "annotations"),
+    "org.jetbrains"      % "annotations" % "15.0", // to solve evicted warning
+    "org.testcontainers" % "influxdb"    % "1.7.3" exclude ("org.jetbrains", "annotations"),
     scalaCheck,
     scalaTest,
     generators,
