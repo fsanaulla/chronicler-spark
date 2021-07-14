@@ -1,6 +1,6 @@
 import de.heikoseeberger.sbtheader.License
 
-lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2019", "Faiaz Sanaulla"))
+lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2021", "Faiaz Sanaulla"))
 
 lazy val `chronicler-spark` = project
   .in(file("."))
@@ -15,6 +15,9 @@ lazy val `chronicler-spark` = project
     sparkStructuredStreaming
   )
 
+  lazy val sparkCodeRead = project
+  .in(file("modules/read/rdd"))
+  
 lazy val sparkCore = project
   .in(file("modules/core"))
   .settings(headerSettings)
