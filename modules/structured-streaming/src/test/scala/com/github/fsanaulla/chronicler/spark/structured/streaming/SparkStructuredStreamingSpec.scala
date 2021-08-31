@@ -56,7 +56,7 @@ class SparkStructuredStreamingSpec
   val meas   = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
   implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
     override def write(obj: Row): ErrorOr[String] = {
