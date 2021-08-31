@@ -1,4 +1,4 @@
-package com.github.fsanaulla.chronicler.spark.tests
+package com.github.fsanaulla.chronicler.spark.testing
 
 import com.github.fsanaulla.chronicler.macros.annotations.{field, tag}
 import com.github.fsanaulla.scalacheck.Arb

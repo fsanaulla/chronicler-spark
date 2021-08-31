@@ -5,7 +5,7 @@ object Library {
   object Versions {
     val chronicler = "0.6.8"
     val spark      = "2.4.7"
-    val scalaTest  = "3.0.8"
+    val scalaTest  = "3.2.8"
     val scalaCheck = "1.14.0"
   }
 
@@ -26,8 +26,7 @@ object Library {
   val streaming: sbt.ModuleID = "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
 
   val itTesting: List[ModuleID] = List(
-    "org.jetbrains"      % "annotations" % "15.0", // to solve evicted warning
-    "org.testcontainers" % "influxdb"    % "1.7.3" exclude ("org.jetbrains", "annotations"),
+    "com.dimafeng" %% "testcontainers-scala" % "0.39.5",
     scalaCheck,
     scalaTest,
     generators,

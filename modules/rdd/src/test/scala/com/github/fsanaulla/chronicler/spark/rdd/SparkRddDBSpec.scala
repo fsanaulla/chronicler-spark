@@ -18,21 +18,23 @@ package com.github.fsanaulla.chronicler.spark.rdd
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
+import com.github.fsanaulla.chronicler.macros.auto._
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{FlatSpec, Matchers, TryValues}
+import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
 class SparkRddDBSpec
-    extends FlatSpec
-    with Matchers
+    extends BaseSpec
     with Eventually
     with IntegrationPatience
     with DockerizedInfluxDB
-    with TryValues {
+    with TryValues
+    with EitherValues
+    with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     mng.close()
@@ -50,30 +52,35 @@ class SparkRddDBSpec
   val db   = "db"
   val meas = "meas"
 
-  implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
-    override def write(obj: Entity): ErrorOr[String] =
-      Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
-  }
-
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
   lazy val mng: UrlManagementClient = InfluxMng(influxConf)
   lazy val io: UrlIOClient          = InfluxIO(influxConf)
 
-  "Influx" should "create database" in {
-    mng.createDatabase(db).success.value.right.get shouldEqual 200
-  }
+  "Influx" - {
+    "create database" in {
+      mng.createDatabase(db).success.value.right.get shouldEqual 200
+    }
 
-  it should "save rdd to InfluxDB using writer" in {
-    sc.parallelize(Entity.samples())
-      .saveToInfluxDB(db)
-      .shouldEqual {}
-  }
+    "store data in database" - {
 
-  it should "retrieve saved items" in {
-    eventually {
-      io.database(db).readJson(s"SELECT * FROM $meas").success.value.right.get.length shouldEqual 20
+      "write" in {
+        sc.parallelize(Entity.samples())
+          .saveToInfluxDB(db)
+          .shouldEqual {}
+      }
+
+      "check" in {
+        eventually {
+          io.database(db)
+            .readJson(s"SELECT * FROM $meas")
+            .success
+            .value
+            .value
+            .length shouldEqual 20
+        }
+      }
     }
   }
 }
