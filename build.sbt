@@ -8,7 +8,7 @@ val scala211 = "2.11.12"
 
 ThisBuild / scalaVersion := scala212
 ThisBuild / organization := "com.github.fsanaulla"
-ThisBuild / description := "nfluxDB connector to Apache Spark on top of Chronicler "
+ThisBuild / description := "InfluxDB connector to Apache Spark on top of Chronicler "
 ThisBuild / homepage := Some(url(s"${Owner.github}/${Owner.projectName}"))
 ThisBuild / developers += Developer(
   id = Owner.id,
@@ -38,8 +38,7 @@ ThisBuild / publishMavenStyle := true
 lazy val `chronicler-spark` = project
   .in(file("."))
   .settings(
-    publish / skip := true,
-    Test / parallelExecution := false
+    publish / skip := true
   )
   .configure(license)
   .aggregate(
