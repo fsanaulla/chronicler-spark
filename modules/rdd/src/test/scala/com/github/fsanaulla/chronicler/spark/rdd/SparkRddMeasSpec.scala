@@ -26,7 +26,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
-class SparkRddSpec
+class SparkRddMeasSpec
     extends BaseSpec
     with Eventually
     with IntegrationPatience
@@ -59,14 +59,14 @@ class SparkRddSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(db).success.value.right.get shouldEqual 200
+      mng.createDatabase(db).success.value.right.get mustEqual 200
     }
 
     "store data in database" - {
       "write" in {
         sc.parallelize(Entity.samples())
           .saveToInfluxDBMeas(db, meas)
-          .shouldEqual {}
+          .mustEqual {}
       }
 
       "check" in {
@@ -76,7 +76,7 @@ class SparkRddSpec
             .success
             .value
             .value
-            .length shouldEqual 20
+            .length mustEqual 20
         }
       }
     }

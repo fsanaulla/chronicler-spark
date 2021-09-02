@@ -65,7 +65,7 @@ class SparkStructuredStreamingDBSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(dbName).success.value.right.get shouldEqual 200
+      mng.createDatabase(dbName).success.value.right.get mustEqual 200
     }
 
     "store data in database" - {
@@ -94,7 +94,7 @@ class SparkStructuredStreamingDBSpec
             .value
             .right
             .get
-            .length shouldEqual 20
+            .length mustEqual 20
         }
       }
     }

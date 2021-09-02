@@ -60,7 +60,7 @@ class SparkRddDBSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(db).success.value.right.get shouldEqual 200
+      mng.createDatabase(db).success.value.right.get mustEqual 200
     }
 
     "store data in database" - {
@@ -68,7 +68,7 @@ class SparkRddDBSpec
       "write" in {
         sc.parallelize(Entity.samples())
           .saveToInfluxDB(db)
-          .shouldEqual {}
+          .mustEqual {}
       }
 
       "check" in {
@@ -78,7 +78,7 @@ class SparkRddDBSpec
             .success
             .value
             .value
-            .length shouldEqual 20
+            .length mustEqual 20
         }
       }
     }

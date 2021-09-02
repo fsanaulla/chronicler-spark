@@ -26,7 +26,7 @@ import com.github.fsanaulla.chronicler.macros.auto._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{TryValues, BeforeAndAfterAll}
+import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
 class SparkDatasetDBSpec
     extends BaseSpec
@@ -34,6 +34,7 @@ class SparkDatasetDBSpec
     with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues
+    with EitherValues
     with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
@@ -64,7 +65,7 @@ class SparkDatasetDBSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(dbName).success.value.right.get shouldEqual 200
+      mng.createDatabase(dbName).success.value.value mustEqual 200
     }
 
     "store data in database" - {
@@ -73,7 +74,7 @@ class SparkDatasetDBSpec
           .samples()
           .toDS()
           .saveToInfluxDB(dbName)
-          .shouldEqual {}
+          .mustEqual {}
       }
 
       "check" in {
@@ -82,9 +83,8 @@ class SparkDatasetDBSpec
             .readJson("SELECT * FROM meas")
             .success
             .value
-            .right
-            .get
-            .length shouldEqual 20
+            .value
+            .length mustEqual 20
         }
       }
     }
