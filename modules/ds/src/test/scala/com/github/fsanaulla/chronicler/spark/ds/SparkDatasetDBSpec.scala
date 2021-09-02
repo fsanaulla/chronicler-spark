@@ -18,40 +18,30 @@ package com.github.fsanaulla.chronicler.spark.ds
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, Entity, SparkSessionBase}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
-import com.github.fsanaulla.chronicler.macros.auto._
+import com.github.fsanaulla.chronicler.spark.core.CallbackHandler
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
+import org.scalatest.{TryValues, EitherValues}
+import SparkDatasetDBSpec._
 
 class SparkDatasetDBSpec
-    extends BaseSpec
+    extends SparkSessionBase
     with Eventually
-    with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues
-    with EitherValues
-    with BeforeAndAfterAll {
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    spark.close()
+
     super.afterAll()
   }
-
-  val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val spark: SparkSession = SparkSession
-    .builder()
-    .config(conf)
-    .getOrCreate()
 
   val dbName = "db"
 
@@ -69,11 +59,17 @@ class SparkDatasetDBSpec
     }
 
     "store data in database" - {
+      val ch = new CallbackHandler(
+        onSuccess = _ => (),
+        onApplicationFailure = ex => println(ex),
+        onNetworkFailure = ex => println(ex)
+      )
+
       "write" in {
         Entity
           .samples()
           .toDS()
-          .saveToInfluxDB(dbName)
+          .saveToInfluxDB(dbName, ch = Some(ch))
           .mustEqual {}
       }
 
@@ -88,5 +84,13 @@ class SparkDatasetDBSpec
         }
       }
     }
+  }
+}
+
+object SparkDatasetDBSpec {
+  implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
+    override def write(obj: Entity): ErrorOr[String] =
+      Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
+
   }
 }

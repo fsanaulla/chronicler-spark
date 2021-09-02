@@ -29,3 +29,5 @@ object CallbackHandler {
   def withAppFailure(f: Throwable => Unit): CallbackHandler     = empty.copy(onApplicationFailure = f)
   def withNetworkFailure(f: Throwable => Unit): CallbackHandler = empty.copy(onNetworkFailure = f)
 }
+
+

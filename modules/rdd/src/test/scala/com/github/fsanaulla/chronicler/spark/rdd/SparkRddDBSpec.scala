@@ -17,37 +17,40 @@
 package com.github.fsanaulla.chronicler.spark.rdd
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
-import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity}
-import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
-import com.github.fsanaulla.chronicler.macros.auto._
-import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
+import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
+import com.github.fsanaulla.chronicler.core.model.InfluxWriter
+import com.github.fsanaulla.chronicler.spark.testing.BaseSpec
+import com.github.fsanaulla.chronicler.spark.testing.DockerizedInfluxDB
+import com.github.fsanaulla.chronicler.spark.testing.Entity
+import com.github.fsanaulla.chronicler.spark.testing.SparkContextBase
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.UrlIOClient
+import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
+import com.github.fsanaulla.chronicler.urlhttp.management.UrlManagementClient
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.EitherValues
+import org.scalatest.TryValues
+import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.IntegrationPatience
+
+import SparkRddDBSpec._
 
 class SparkRddDBSpec
-    extends BaseSpec
+    extends SparkContextBase
     with Eventually
-    with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues
-    with EitherValues
-    with BeforeAndAfterAll {
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    sc.stop()
+
     super.afterAll()
   }
-
-  val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val sc: SparkContext = new SparkContext(conf)
 
   val db   = "db"
   val meas = "meas"
@@ -82,5 +85,13 @@ class SparkRddDBSpec
         }
       }
     }
+  }
+}
+
+object SparkRddDBSpec {
+  implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
+    override def write(obj: Entity): ErrorOr[String] =
+      Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
+
   }
 }

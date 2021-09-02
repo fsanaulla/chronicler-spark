@@ -18,7 +18,7 @@ package com.github.fsanaulla.chronicler.spark.structured.streaming
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkSessionBase}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
@@ -29,10 +29,9 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
 class SparkStructuredStreamingSpec
-    extends BaseSpec
+    extends SparkSessionBase
     with DockerizedInfluxDB
     with Eventually
-    with IntegrationPatience
     with TryValues
     with EitherValues
     with BeforeAndAfterAll {
@@ -40,18 +39,9 @@ class SparkStructuredStreamingSpec
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    spark.stop()
+
     super.afterAll()
   }
-
-  val conf: SparkConf = new SparkConf()
-    .setAppName("ss")
-    .setMaster("local[*]")
-
-  val spark: SparkSession = SparkSession
-    .builder()
-    .config(conf)
-    .getOrCreate()
 
   val dbName = "db"
   val meas   = "meas"
@@ -105,8 +95,7 @@ class SparkStructuredStreamingSpec
             .readJson(s"SELECT * FROM $meas")
             .success
             .value
-            .right
-            .get
+            .value
             .length mustEqual 20
         }
       }

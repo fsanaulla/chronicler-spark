@@ -18,39 +18,29 @@ package com.github.fsanaulla.chronicler.spark.ds
 
 import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
 import com.github.fsanaulla.chronicler.macros.auto._
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkSessionBase, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.spark.core.CallbackHandler
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{BeforeAndAfterAll, TryValues, EitherValues}
+import org.scalatest.{TryValues, EitherValues}
 
 class SparkDatasetMeasSpec
-    extends BaseSpec
+    extends SparkSessionBase
     with Eventually
-    with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues
-    with EitherValues
-    with BeforeAndAfterAll {
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    spark.close()
+
     super.afterAll()
   }
-
-  val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val spark: SparkSession = SparkSession
-    .builder()
-    .config(conf)
-    .getOrCreate()
 
   val dbName = "db"
   val meas   = "meas"
@@ -68,23 +58,34 @@ class SparkDatasetMeasSpec
       mng.createDatabase(dbName).success.value.value mustEqual 200
     }
 
-    "write" in {
-      Entity
-        .samples()
-        .toDS()
-        .saveToInfluxDBMeas(dbName, meas)
-        .mustEqual {}
+    "store data in database" - {
+
+      "write" in {
+        val ch = new CallbackHandler(
+          onSuccess = _ => (),
+          onApplicationFailure = ex => println("Error: " + ex),
+          onNetworkFailure = ex => println("Error: " + ex)
+        )
+
+        Entity
+          .samples()
+          .toDS()
+          .saveToInfluxDBMeas(dbName, meas, ch = Some(ch))
+          .mustEqual {}
+      }
+
+      "check" in {
+        eventually {
+          io.database(dbName)
+            .readJson("SELECT * FROM meas")
+            .success
+            .value
+            .value
+            .length mustEqual 20
+        }
+      }
+
     }
 
-    "check" in {
-      eventually {
-        io.database(dbName)
-          .readJson("SELECT * FROM meas")
-          .success
-          .value
-          .value
-          .length mustEqual 20
-      }
-    }
   }
 }

@@ -103,14 +103,16 @@ package object rdd {
           val ethPoints = either.seq(batch.map(wr.write))
           val response = ethPoints
             .fold(Failure(_), Success(_))
-            .flatMap(
+            .flatMap { rows =>
               db.bulkWriteNative(
-                _,
+                rows,
                 dataInfo.consistency,
                 dataInfo.precision,
                 dataInfo.retentionPolicy
               )
-            )
+
+            }
+
           handleResponse(handler, response)
         }
 

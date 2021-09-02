@@ -18,7 +18,7 @@ package com.github.fsanaulla.chronicler.spark.streaming
 
 import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
 import com.github.fsanaulla.chronicler.macros.auto._
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkContextBase, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
@@ -30,28 +30,21 @@ import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 import scala.collection.mutable
 
 class SparkStreamingSpec
-    extends BaseSpec
+    extends SparkContextBase
     with DockerizedInfluxDB
     with Eventually
-    with IntegrationPatience
     with TryValues
-    with EitherValues
-    with BeforeAndAfterAll {
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    ssc.stop(stopSparkContext = true, stopGracefully = true)
+
+    ssc.stop(stopSparkContext = false, stopGracefully = true)
     super.afterAll()
   }
 
-  lazy val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val sc: SparkContext = new SparkContext(conf)
-  val ssc              = new StreamingContext(sc, Seconds(1))
-
+  val ssc    = new StreamingContext(sc, Seconds(1))
   val dbName = "db"
   val meas   = "meas"
 

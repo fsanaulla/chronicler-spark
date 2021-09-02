@@ -34,6 +34,7 @@ ThisBuild / licenses := Seq(
 )
 ThisBuild / pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
 ThisBuild / publishMavenStyle := true
+ThisBuild / Test / parallelExecution := false
 
 lazy val `chronicler-spark` = project
   .in(file("."))
@@ -76,7 +77,7 @@ lazy val sparkDs = projectMatrix
   .settings(
     name := "chronicler-spark-ds",
     libraryDependencies ++= Seq(
-      Library.ds,
+      Library.sparkSql,
       Library.urlMng % Test
     )
   )
@@ -91,7 +92,7 @@ lazy val sparkStreaming = projectMatrix
   .settings(
     name := "chronicler-spark-streaming",
     libraryDependencies ++= Seq(
-      Library.streaming,
+      Library.sparkStreaming,
       Library.urlMng % Test
     ),
     Test / parallelExecution := false
@@ -107,7 +108,7 @@ lazy val sparkStructuredStreaming = projectMatrix
   .settings(
     name := "chronicler-spark-structured-streaming",
     libraryDependencies ++= Seq(
-      Library.ds,
+      Library.sparkSql,
       Library.urlMng % Test
     ) ++ Library.core
   )

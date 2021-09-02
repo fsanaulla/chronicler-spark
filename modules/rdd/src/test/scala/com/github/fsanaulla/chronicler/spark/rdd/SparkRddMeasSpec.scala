@@ -18,7 +18,7 @@ package com.github.fsanaulla.chronicler.spark.rdd
 
 import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
 import com.github.fsanaulla.chronicler.macros.auto._
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec, Entity, SparkContextBase}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
@@ -27,9 +27,8 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
 class SparkRddMeasSpec
-    extends BaseSpec
+    extends SparkContextBase
     with Eventually
-    with IntegrationPatience
     with DockerizedInfluxDB
     with TryValues
     with EitherValues
@@ -38,15 +37,10 @@ class SparkRddMeasSpec
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    sc.stop()
+
     super.afterAll()
   }
 
-  val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val sc: SparkContext = new SparkContext(conf)
 
   val db   = "db"
   val meas = "meas"

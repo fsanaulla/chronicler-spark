@@ -18,7 +18,7 @@ package com.github.fsanaulla.chronicler.spark.structured.streaming
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, BaseSpec}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkSessionBase}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.macros.auto._
@@ -31,10 +31,9 @@ import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 import SparkStructuredStreamingDBSpec._
 
 class SparkStructuredStreamingDBSpec
-    extends BaseSpec
+    extends SparkSessionBase
     with DockerizedInfluxDB
     with Eventually
-    with IntegrationPatience
     with TryValues
     with EitherValues
     with BeforeAndAfterAll {
@@ -42,21 +41,11 @@ class SparkStructuredStreamingDBSpec
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    spark.stop()
+    
     super.afterAll()
   }
 
-  val conf: SparkConf = new SparkConf()
-    .setAppName("ss")
-    .setMaster("local[*]")
-
-  val spark: SparkSession = SparkSession
-    .builder()
-    .config(conf)
-    .getOrCreate()
-
   val dbName = "db"
-  val meas   = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
     InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
@@ -93,8 +82,7 @@ class SparkStructuredStreamingDBSpec
             .readJson(s"SELECT * FROM $meas")
             .success
             .value
-            .right
-            .get
+            .value
             .length mustEqual 20
         }
       }
@@ -103,11 +91,15 @@ class SparkStructuredStreamingDBSpec
 }
 
 object SparkStructuredStreamingDBSpec {
+  val meas = "meas"
+
   implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
     override def write(obj: Row): ErrorOr[String] = {
       val sb = StringBuilder.newBuilder
 
-      sb.append(s"name=${obj(0)}")
+      sb.append(meas)
+        .append(",")
+        .append(s"name=${obj(0)}")
         .append(" ")
         .append("surname=")
         .append("\"")

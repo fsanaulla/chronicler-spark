@@ -12,7 +12,7 @@ object Entity {
   implicit val srtArb: Arbitrary[String] = Arbitrary(Gen.alphaStr.filter(_.nonEmpty))
 
   val entityArb: Arbitrary[Entity] = Arb.dummy[Entity]
-
+  
   def samples(count: Int = 20): Seq[Entity] = {
 
     @tailrec
