@@ -27,7 +27,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SparkSession}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{TryValues, BeforeAndAfterAll}
+import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 import SparkStructuredStreamingDBSpec._
 
 class SparkStructuredStreamingDBSpec
@@ -36,6 +36,7 @@ class SparkStructuredStreamingDBSpec
     with Eventually
     with IntegrationPatience
     with TryValues
+    with EitherValues
     with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
@@ -65,7 +66,7 @@ class SparkStructuredStreamingDBSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(dbName).success.value.right.get mustEqual 200
+      mng.createDatabase(dbName).success.value.value mustEqual 200
     }
 
     "store data in database" - {

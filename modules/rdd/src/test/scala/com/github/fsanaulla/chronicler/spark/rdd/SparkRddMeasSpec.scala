@@ -59,7 +59,7 @@ class SparkRddMeasSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(db).success.value.right.get mustEqual 200
+      mng.createDatabase(db).success.value.value mustEqual 200
     }
 
     "store data in database" - {

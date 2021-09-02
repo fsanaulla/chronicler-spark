@@ -25,7 +25,7 @@ import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{TryValues, BeforeAndAfterAll}
+import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
 import scala.collection.mutable
 
@@ -35,6 +35,7 @@ class SparkStreamingSpec
     with Eventually
     with IntegrationPatience
     with TryValues
+    with EitherValues
     with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
@@ -62,7 +63,7 @@ class SparkStreamingSpec
 
   "Influx" - {
     "create database" in {
-      mng.createDatabase(dbName).success.value.right.get mustEqual 200
+      mng.createDatabase(dbName).success.value.value mustEqual 200
     }
 
     "store data in database" - {

@@ -82,8 +82,7 @@ class SparkDatasetMeasSpec
           .readJson("SELECT * FROM meas")
           .success
           .value
-          .right
-          .get
+          .value
           .length mustEqual 20
       }
     }
