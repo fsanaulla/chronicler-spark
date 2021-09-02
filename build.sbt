@@ -37,7 +37,10 @@ ThisBuild / publishMavenStyle := true
 
 lazy val `chronicler-spark` = project
   .in(file("."))
-  .settings(publish / skip := true)
+  .settings(
+    publish / skip := true,
+    Test / parallelExecution := false
+  )
   .configure(license)
   .aggregate(
     Seq(core, sparkRdd, sparkDs, sparkStreaming, sparkStructuredStreaming, testing)
