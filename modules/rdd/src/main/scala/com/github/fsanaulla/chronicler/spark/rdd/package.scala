@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Faiaz Sanaulla
+ * Copyright 2018-2021 Faiaz Sanaulla
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,7 @@ import scala.util.{Failure, Success, Try}
 
 package object rdd {
 
-  /**
-    * Extension that will provide static methods for saving RDDs to InfluxDB
+  /** Extension that will provide static methods for saving RDDs to InfluxDB
     *
     * @param rdd - [[org.apache.spark.rdd.RDD]]
     * @tparam T  - inner type
@@ -52,8 +51,7 @@ package object rdd {
         }
       }
 
-    /**
-      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB, specifying database measurement
+    /** Write [[org.apache.spark.rdd.RDD]] to InfluxDB, specifying database measurement
       *
       * @param dbName   - database name
       * @param measName - measurement name
@@ -86,8 +84,7 @@ package object rdd {
       }
     }
 
-    /**
-      * Write [[org.apache.spark.rdd.RDD]] to InfluxDB, with measurements that generated dynamicly
+    /** Write [[org.apache.spark.rdd.RDD]] to InfluxDB, with measurements that generated dynamicly
       *
       * @param dbName   - database name
       * @param handler       - defined callbacks for responses
@@ -106,14 +103,16 @@ package object rdd {
           val ethPoints = either.seq(batch.map(wr.write))
           val response = ethPoints
             .fold(Failure(_), Success(_))
-            .flatMap(
+            .flatMap { rows =>
               db.bulkWriteNative(
-                _,
+                rows,
                 dataInfo.consistency,
                 dataInfo.precision,
                 dataInfo.retentionPolicy
               )
-            )
+
+            }
+
           handleResponse(handler, response)
         }
 

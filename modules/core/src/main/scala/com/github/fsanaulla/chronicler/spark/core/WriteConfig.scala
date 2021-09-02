@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Faiaz Sanaulla
+ * Copyright 2018-2021 Faiaz Sanaulla
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,26 @@
 
 package com.github.fsanaulla.chronicler.spark.core
 
-import com.github.fsanaulla.chronicler.core.enums.{Consistencies, Consistency, Precision, Precisions}
+import com.github.fsanaulla.chronicler.core.enums.{
+  Consistencies,
+  Consistency,
+  Precision,
+  Precisions
+}
 
-/**
-  * Configuration for write operation
+/** Configuration for write operation
   *
   * @param batchSize       - count of  points in one batch
   * @param consistency     - data consistency
   * @param precision       - data precision
   * @param retentionPolicy - data retention policy
   */
-final case class WriteConfig(batchSize: Int,
-                             consistency: Consistency,
-                             precision: Precision,
-                             retentionPolicy: Option[String])
+final case class WriteConfig(
+    batchSize: Int,
+    consistency: Consistency,
+    precision: Precision,
+    retentionPolicy: Option[String]
+)
 
 object WriteConfig {
   // default entry

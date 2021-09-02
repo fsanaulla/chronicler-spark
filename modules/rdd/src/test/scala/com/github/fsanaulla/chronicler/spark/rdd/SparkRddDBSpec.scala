@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Faiaz Sanaulla
+ * Copyright 2018-2021 Faiaz Sanaulla
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,63 +17,81 @@
 package com.github.fsanaulla.chronicler.spark.rdd
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
-import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
-import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
-import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
+import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
+import com.github.fsanaulla.chronicler.core.model.InfluxWriter
+import com.github.fsanaulla.chronicler.spark.testing.BaseSpec
+import com.github.fsanaulla.chronicler.spark.testing.DockerizedInfluxDB
+import com.github.fsanaulla.chronicler.spark.testing.Entity
+import com.github.fsanaulla.chronicler.spark.testing.SparkContextBase
+import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
+import com.github.fsanaulla.chronicler.urlhttp.io.UrlIOClient
+import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
+import com.github.fsanaulla.chronicler.urlhttp.management.UrlManagementClient
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{FlatSpec, Matchers, TryValues}
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.EitherValues
+import org.scalatest.TryValues
+import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.IntegrationPatience
+
+import SparkRddDBSpec._
 
 class SparkRddDBSpec
-    extends FlatSpec
-    with Matchers
+    extends SparkContextBase
     with Eventually
-    with IntegrationPatience
     with DockerizedInfluxDB
-    with TryValues {
+    with TryValues
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    sc.stop()
+
     super.afterAll()
   }
-
-  val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val sc: SparkContext = new SparkContext(conf)
 
   val db   = "db"
   val meas = "meas"
 
-  implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
-    override def write(obj: Entity): ErrorOr[String] =
-      Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
-  }
-
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
   lazy val mng: UrlManagementClient = InfluxMng(influxConf)
   lazy val io: UrlIOClient          = InfluxIO(influxConf)
 
-  "Influx" should "create database" in {
-    mng.createDatabase(db).success.value.right.get shouldEqual 200
-  }
-
-  it should "save rdd to InfluxDB using writer" in {
-    sc.parallelize(Entity.samples())
-      .saveToInfluxDB(db)
-      .shouldEqual {}
-  }
-
-  it should "retrieve saved items" in {
-    eventually {
-      io.database(db).readJson(s"SELECT * FROM $meas").success.value.right.get.length shouldEqual 20
+  "Influx" - {
+    "create database" in {
+      mng.createDatabase(db).success.value.value mustEqual 200
     }
+
+    "store data in database" - {
+
+      "write" in {
+        sc.parallelize(Entity.samples())
+          .saveToInfluxDB(db)
+          .mustEqual {}
+      }
+
+      "check" in {
+        eventually {
+          io.database(db)
+            .readJson(s"SELECT * FROM $meas")
+            .success
+            .value
+            .value
+            .length mustEqual 20
+        }
+      }
+    }
+  }
+}
+
+object SparkRddDBSpec {
+  implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
+    override def write(obj: Entity): ErrorOr[String] =
+      Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
+
   }
 }

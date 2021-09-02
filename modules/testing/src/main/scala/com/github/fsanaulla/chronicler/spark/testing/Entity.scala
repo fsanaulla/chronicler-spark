@@ -1,4 +1,4 @@
-package com.github.fsanaulla.chronicler.spark.tests
+package com.github.fsanaulla.chronicler.spark.testing
 
 import com.github.fsanaulla.chronicler.macros.annotations.{field, tag}
 import com.github.fsanaulla.scalacheck.Arb
@@ -12,7 +12,7 @@ object Entity {
   implicit val srtArb: Arbitrary[String] = Arbitrary(Gen.alphaStr.filter(_.nonEmpty))
 
   val entityArb: Arbitrary[Entity] = Arb.dummy[Entity]
-
+  
   def samples(count: Int = 20): Seq[Entity] = {
 
     @tailrec

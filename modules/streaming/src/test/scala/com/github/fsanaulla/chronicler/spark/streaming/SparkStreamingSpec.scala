@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Faiaz Sanaulla
+ * Copyright 2018-2021 Faiaz Sanaulla
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,75 +18,73 @@ package com.github.fsanaulla.chronicler.spark.streaming
 
 import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
 import com.github.fsanaulla.chronicler.macros.auto._
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkContextBase, Entity}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{FlatSpec, Matchers, TryValues}
+import org.scalatest.{TryValues, BeforeAndAfterAll, EitherValues}
 
 import scala.collection.mutable
 
 class SparkStreamingSpec
-    extends FlatSpec
-    with Matchers
+    extends SparkContextBase
     with DockerizedInfluxDB
     with Eventually
-    with IntegrationPatience
-    with TryValues {
+    with TryValues
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    ssc.stop(stopSparkContext = true, stopGracefully = true)
+
+    ssc.stop(stopSparkContext = false, stopGracefully = true)
     super.afterAll()
   }
 
-  lazy val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val sc: SparkContext = new SparkContext(conf)
-  val ssc              = new StreamingContext(sc, Seconds(1))
-
+  val ssc    = new StreamingContext(sc, Seconds(1))
   val dbName = "db"
   val meas   = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
   lazy val mng: UrlManagementClient = InfluxMng(influxConf)
   lazy val io: UrlIOClient          = InfluxIO(influxConf)
 
-  "Influx" should "create database" in {
-    mng.createDatabase(dbName).success.value.right.get shouldEqual 200
-  }
+  "Influx" - {
+    "create database" in {
+      mng.createDatabase(dbName).success.value.value mustEqual 200
+    }
 
-  it should "save rdd to InfluxDB" in {
-    val rdd = sc.parallelize(Entity.samples())
+    "store data in database" - {
+      "write" in {
+        val rdd = sc.parallelize(Entity.samples())
 
-    // define stream
-    ssc
-      .queueStream(mutable.Queue(rdd))
-      .saveToInfluxDBMeas(dbName, meas)
+        // define stream
+        ssc
+          .queueStream(mutable.Queue(rdd))
+          .saveToInfluxDBMeas(dbName, meas)
 
-    ssc.start()
+        ssc.start()
 
-    // necessary stub
-    Thread.sleep(22 * 1000)
-  }
+        // necessary stub
+        Thread.sleep(22 * 1000)
+      }
 
-  it should "retrieve saved items" in {
-    eventually {
-      io.database(dbName)
-        .readJson("SELECT * FROM meas")
-        .success
-        .value
-        .right
-        .get
-        .length shouldEqual 20
+      "check" in {
+        eventually {
+          io.database(dbName)
+            .readJson("SELECT * FROM meas")
+            .success
+            .value
+            .right
+            .get
+            .length mustEqual 20
+        }
+      }
     }
   }
 }

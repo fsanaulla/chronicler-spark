@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Faiaz Sanaulla
+ * Copyright 2018-2021 Faiaz Sanaulla
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,76 +18,79 @@ package com.github.fsanaulla.chronicler.spark.ds
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
-import com.github.fsanaulla.chronicler.spark.tests.{DockerizedInfluxDB, Entity}
+import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, Entity, SparkSessionBase}
 import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
 import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
 import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.spark.core.CallbackHandler
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{FlatSpec, Matchers, TryValues}
+import org.scalatest.{TryValues, EitherValues}
+import SparkDatasetDBSpec._
 
 class SparkDatasetDBSpec
-    extends FlatSpec
-    with Matchers
+    extends SparkSessionBase
     with Eventually
-    with IntegrationPatience
     with DockerizedInfluxDB
-    with TryValues {
+    with TryValues
+    with EitherValues {
 
   override def afterAll(): Unit = {
     mng.close()
     io.close()
-    spark.close()
+
     super.afterAll()
   }
-
-  val conf: SparkConf = new SparkConf()
-    .setAppName("Rdd")
-    .setMaster("local[*]")
-
-  val spark: SparkSession = SparkSession
-    .builder()
-    .config(conf)
-    .getOrCreate()
 
   val dbName = "db"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(s"http://$host", port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
 
   lazy val mng: UrlManagementClient = InfluxMng(influxConf)
   lazy val io: UrlIOClient          = InfluxIO(influxConf)
 
+  import spark.implicits._
+
+  "Influx" - {
+    "create database" in {
+      mng.createDatabase(dbName).success.value.value mustEqual 200
+    }
+
+    "store data in database" - {
+      val ch = new CallbackHandler(
+        onSuccess = _ => (),
+        onApplicationFailure = ex => println(ex),
+        onNetworkFailure = ex => println(ex)
+      )
+
+      "write" in {
+        Entity
+          .samples()
+          .toDS()
+          .saveToInfluxDB(dbName, ch = Some(ch))
+          .mustEqual {}
+      }
+
+      "check" in {
+        eventually {
+          io.database(dbName)
+            .readJson("SELECT * FROM meas")
+            .success
+            .value
+            .value
+            .length mustEqual 20
+        }
+      }
+    }
+  }
+}
+
+object SparkDatasetDBSpec {
   implicit val wr: InfluxWriter[Entity] = new InfluxWriter[Entity] {
     override def write(obj: Entity): ErrorOr[String] =
       Right("meas,name=\"" + obj.name + "\" surname=\"" + obj.surname + "\"")
 
-  }
-
-  import spark.implicits._
-
-  "Influx" should "create database" in {
-    mng.createDatabase(dbName).success.value.right.get shouldEqual 200
-  }
-
-  it should "save rdd to InfluxDB" in {
-    Entity
-      .samples()
-      .toDS()
-      .saveToInfluxDB(dbName)
-      .shouldEqual {}
-  }
-
-  it should "retrieve saved items" in {
-    eventually {
-      io.database(dbName)
-        .readJson("SELECT * FROM meas")
-        .success
-        .value
-        .right
-        .get
-        .length shouldEqual 20
-    }
   }
 }

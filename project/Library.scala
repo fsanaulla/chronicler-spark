@@ -3,9 +3,9 @@ import sbt._
 object Library {
 
   object Versions {
-    val chronicler = "0.6.5"
+    val chronicler = "0.6.8"
     val spark      = "2.4.7"
-    val scalaTest  = "3.0.8"
+    val scalaTest  = "3.2.8"
     val scalaCheck = "1.14.0"
   }
 
@@ -13,25 +13,31 @@ object Library {
   val urlIO          = "com.github.fsanaulla" %% "chronicler-url-io"         % Versions.chronicler
   val urlMng         = "com.github.fsanaulla" %% "chronicler-url-management" % Versions.chronicler
   val macros         = "com.github.fsanaulla" %% "chronicler-macros"         % Versions.chronicler
-  val scalaTest      = "org.scalatest"        %% "scalatest"                 % Versions.scalaTest
   val scalaCheck     = "org.scalacheck"       %% "scalacheck"                % Versions.scalaCheck
   val generators     = "com.github.fsanaulla" %% "scalacheck-generators"     % "0.2.0"
+  val sparkCore      = "org.apache.spark"     %% "spark-core"                % Versions.spark
 
   val core: List[ModuleID] = List(
-    "org.apache.spark" %% "spark-core" % Versions.spark % Provided,
+    sparkCore % Provided,
     urlIO
   )
 
-  val ds: sbt.ModuleID        = "org.apache.spark" %% "spark-sql"       % Versions.spark % Provided
-  val streaming: sbt.ModuleID = "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
+  val sparkSql: sbt.ModuleID = "org.apache.spark" %% "spark-sql" % Versions.spark % Provided
+  val sparkStreaming: sbt.ModuleID =
+    "org.apache.spark" %% "spark-streaming" % Versions.spark % Provided
+
+  val scalaTest = List(
+    "org.scalatest" %% "scalatest-freespec",
+    "org.scalatest" %% "scalatest-mustmatchers"
+  ).map(_ % Versions.scalaTest)
 
   val itTesting: List[ModuleID] = List(
-    "org.jetbrains"      % "annotations" % "15.0", // to solve evicted warning
-    "org.testcontainers" % "influxdb"    % "1.7.3" exclude ("org.jetbrains", "annotations"),
+    "com.dimafeng" %% "testcontainers-scala" % "0.39.5",
     scalaCheck,
-    scalaTest,
     generators,
-    macros
-  )
+    macros,
+    sparkCore,
+    sparkSql
+  ) ++ scalaTest
 
 }
