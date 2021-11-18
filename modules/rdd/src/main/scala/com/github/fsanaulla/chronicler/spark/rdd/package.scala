@@ -20,8 +20,8 @@ import com.github.fsanaulla.chronicler.core.alias.ErrorOr
 import com.github.fsanaulla.chronicler.core.either
 import com.github.fsanaulla.chronicler.core.model.InfluxWriter
 import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
-import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
-import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.io.InfluxIO
+import com.github.fsanaulla.chronicler.sync.shared.InfluxConfig
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -31,8 +31,10 @@ package object rdd {
 
   /** Extension that will provide static methods for saving RDDs to InfluxDB
     *
-    * @param rdd - [[org.apache.spark.rdd.RDD]]
-    * @tparam T  - inner type
+    * @param rdd
+    *   - [[org.apache.spark.rdd.RDD]]
+    * @tparam T
+    *   - inner type
     */
   implicit final class RddOps[T](private val rdd: RDD[T]) extends AnyVal {
 
@@ -53,10 +55,14 @@ package object rdd {
 
     /** Write [[org.apache.spark.rdd.RDD]] to InfluxDB, specifying database measurement
       *
-      * @param dbName   - database name
-      * @param measName - measurement name
-      * @param handler  - defined callbacks for responses
-      * @param dataInfo - data characteristics
+      * @param dbName
+      *   - database name
+      * @param measName
+      *   - measurement name
+      * @param handler
+      *   - defined callbacks for responses
+      * @param dataInfo
+      *   - data characteristics
       */
     def saveToInfluxDBMeas(
         dbName: String,
@@ -86,9 +92,12 @@ package object rdd {
 
     /** Write [[org.apache.spark.rdd.RDD]] to InfluxDB, with measurements that generated dynamicly
       *
-      * @param dbName   - database name
-      * @param handler       - defined callbacks for responses
-      * @param dataInfo - data characteristics
+      * @param dbName
+      *   - database name
+      * @param handler
+      *   - defined callbacks for responses
+      * @param dataInfo
+      *   - data characteristics
       */
     def saveToInfluxDB(
         dbName: String,

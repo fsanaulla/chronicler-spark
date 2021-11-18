@@ -12,7 +12,7 @@ object Entity {
   implicit val srtArb: Arbitrary[String] = Arbitrary(Gen.alphaStr.filter(_.nonEmpty))
 
   val entityArb: Arbitrary[Entity] = Arb.dummy[Entity]
-  
+
   def samples(count: Int = 20): Seq[Entity] = {
 
     @tailrec
@@ -21,7 +21,7 @@ object Entity {
       else {
         entityArb.arbitrary.sample match {
           case Some(e) => samplesRec(samples :+ e, acc + 1)
-          case _ => samplesRec(samples, acc)
+          case _       => samplesRec(samples, acc)
         }
       }
     }

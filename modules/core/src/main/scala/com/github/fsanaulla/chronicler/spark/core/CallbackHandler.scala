@@ -25,9 +25,7 @@ final case class CallbackHandler(
 object CallbackHandler {
   val empty: CallbackHandler = CallbackHandler(_ => (), _ => (), _ => ())
 
-  def withSuccess(f: Int => Unit): CallbackHandler              = empty.copy(onSuccess = f)
-  def withAppFailure(f: Throwable => Unit): CallbackHandler     = empty.copy(onApplicationFailure = f)
+  def withSuccess(f: Int => Unit): CallbackHandler          = empty.copy(onSuccess = f)
+  def withAppFailure(f: Throwable => Unit): CallbackHandler = empty.copy(onApplicationFailure = f)
   def withNetworkFailure(f: Throwable => Unit): CallbackHandler = empty.copy(onNetworkFailure = f)
 }
-
-

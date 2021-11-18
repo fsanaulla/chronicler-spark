@@ -19,26 +19,28 @@ package com.github.fsanaulla.chronicler.spark
 import com.github.fsanaulla.chronicler.core.model.InfluxWriter
 import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
 import com.github.fsanaulla.chronicler.spark.rdd._
-import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.shared.InfluxConfig
 import org.apache.spark.streaming.dstream.DStream
 
 import scala.reflect.ClassTag
 
 package object streaming {
 
-  /**
-    * Extension that will provide static methods for saving DStream to InfluxDB
+  /** Extension that will provide static methods for saving DStream to InfluxDB
     *
-    * @param stream - [[DStream]]
-    * @tparam T - inner type
+    * @param stream
+    *   - [[DStream]]
+    * @tparam T
+    *   - inner type
     */
   implicit final class DStreamOps[T](private val stream: DStream[T]) extends AnyVal {
 
-    /**
-      * Write [[DStream]] to InfluxDB
+    /** Write [[DStream]] to InfluxDB
       *
-      * @param dbName          - database name
-      * @param measName        - measurement name
+      * @param dbName
+      *   - database name
+      * @param measName
+      *   - measurement name
       */
     def saveToInfluxDBMeas(
         dbName: String,
@@ -49,10 +51,10 @@ package object streaming {
       stream.foreachRDD(_.saveToInfluxDBMeas(dbName, measName, ch, dataInfo))
     }
 
-    /**
-      * Write [[DStream]] to InfluxDB
+    /** Write [[DStream]] to InfluxDB
       *
-      * @param dbName          - database name
+      * @param dbName
+      *   - database name
       */
     def saveToInfluxDB(
         dbName: String,
