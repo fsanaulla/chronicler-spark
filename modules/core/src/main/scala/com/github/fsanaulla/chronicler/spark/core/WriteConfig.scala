@@ -25,10 +25,14 @@ import com.github.fsanaulla.chronicler.core.enums.{
 
 /** Configuration for write operation
   *
-  * @param batchSize       - count of  points in one batch
-  * @param consistency     - data consistency
-  * @param precision       - data precision
-  * @param retentionPolicy - data retention policy
+  * @param batchSize
+  *   - count of points in one batch
+  * @param consistency
+  *   - data consistency
+  * @param precision
+  *   - data precision
+  * @param retentionPolicy
+  *   - data retention policy
   */
 final case class WriteConfig(
     batchSize: Int,
