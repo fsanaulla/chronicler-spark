@@ -17,11 +17,12 @@
 package com.github.fsanaulla.chronicler.spark.structured.streaming
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
-import com.github.fsanaulla.chronicler.core.model.{InfluxCredentials, InfluxWriter}
+import com.github.fsanaulla.chronicler.core.auth.{InfluxCredentials}
+import com.github.fsanaulla.chronicler.core.model.{InfluxWriter}
 import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkSessionBase}
-import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
-import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
-import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.io.{InfluxIO}
+import com.github.fsanaulla.chronicler.sync.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.management.{InfluxMng}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SparkSession}
@@ -47,7 +48,7 @@ class SparkStructuredStreamingSpec
   val meas   = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials.Basic("admin", "password")))
 
   implicit val wr: InfluxWriter[Row] = new InfluxWriter[Row] {
     override def write(obj: Row): ErrorOr[String] = {
@@ -64,8 +65,8 @@ class SparkStructuredStreamingSpec
     }
   }
 
-  lazy val mng: UrlManagementClient = InfluxMng(influxConf)
-  lazy val io: UrlIOClient          = InfluxIO(influxConf)
+  lazy val mng = InfluxMng(influxConf)
+  lazy val io  = InfluxIO(influxConf)
 
   "Influx" - {
     "create database" in {
