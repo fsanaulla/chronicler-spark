@@ -19,26 +19,28 @@ package com.github.fsanaulla.chronicler.spark
 import com.github.fsanaulla.chronicler.core.model.InfluxWriter
 import com.github.fsanaulla.chronicler.spark.core.{CallbackHandler, WriteConfig}
 import com.github.fsanaulla.chronicler.spark.rdd._
-import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.shared.InfluxConfig
 import org.apache.spark.sql.Dataset
 
 import scala.reflect.ClassTag
 
 package object ds {
 
-  /**
-    * Extension that will provide static methods for saving [[Dataset]] to InfluxDB
+  /** Extension that will provide static methods for saving [[Dataset]] to InfluxDB
     *
-    * @param ds - [[Dataset]]
-    * @tparam T - inner type
+    * @param ds
+    *   - [[Dataset]]
+    * @tparam T
+    *   - inner type
     */
   implicit final class DatasetOps[T](private val ds: Dataset[T]) extends AnyVal {
 
-    /**
-      * Write Spark [[Dataset]] to InfluxDB
+    /** Write Spark [[Dataset]] to InfluxDB
       *
-      * @param dbName          - database name
-      * @param measName        - measurement name
+      * @param dbName
+      *   - database name
+      * @param measName
+      *   - measurement name
       */
     def saveToInfluxDBMeas(
         dbName: String,
@@ -50,10 +52,10 @@ package object ds {
       ds.rdd.saveToInfluxDBMeas(dbName, measName, ch, dataInfo)
     }
 
-    /**
-      * Write Spark [[Dataset]] to InfluxDB
+    /** Write Spark [[Dataset]] to InfluxDB
       *
-      * @param dbName          - database name
+      * @param dbName
+      *   - database name
       */
     def saveToInfluxDB(
         dbName: String,

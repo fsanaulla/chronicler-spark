@@ -9,7 +9,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
   */
 trait BaseSpec extends AnyFreeSpec with Matchers with PatienceConfiguration {
   implicit val pc: PatienceConfig = PatienceConfig(
-      timeout = scaled(Span(60, Seconds)),
-      interval = scaled(Span(1000, Millis))
-    )
+    timeout = scaled(Span(60, Seconds)),
+    interval = scaled(Span(1000, Millis))
+  )
 }

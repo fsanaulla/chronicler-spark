@@ -45,7 +45,9 @@ lazy val `chronicler-spark` = project
   .aggregate(
     Seq(core, sparkRdd, sparkDs, sparkStreaming, sparkStructuredStreaming, testing)
       .flatMap(_.projectRefs): _*
-  )
+  )  
+  .enablePlugins(ScalafmtPlugin)
+
 
 lazy val core = projectMatrix
   .in(file("modules/core"))
