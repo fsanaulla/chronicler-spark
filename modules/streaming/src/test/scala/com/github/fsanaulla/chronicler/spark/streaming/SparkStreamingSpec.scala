@@ -16,12 +16,12 @@
 
 package com.github.fsanaulla.chronicler.spark.streaming
 
-import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
+import com.github.fsanaulla.chronicler.core.auth.InfluxCredentials
 import com.github.fsanaulla.chronicler.macros.auto._
 import com.github.fsanaulla.chronicler.spark.testing.{DockerizedInfluxDB, SparkContextBase, Entity}
-import com.github.fsanaulla.chronicler.urlhttp.io.{InfluxIO, UrlIOClient}
-import com.github.fsanaulla.chronicler.urlhttp.management.{InfluxMng, UrlManagementClient}
-import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.io.{InfluxIO}
+import com.github.fsanaulla.chronicler.sync.management.{InfluxMng}
+import com.github.fsanaulla.chronicler.sync.shared.InfluxConfig
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
@@ -49,10 +49,10 @@ class SparkStreamingSpec
   val meas   = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials.Basic("admin", "password")))
 
-  lazy val mng: UrlManagementClient = InfluxMng(influxConf)
-  lazy val io: UrlIOClient          = InfluxIO(influxConf)
+  lazy val mng = InfluxMng(influxConf)
+  lazy val io          = InfluxIO(influxConf)
 
   "Influx" - {
     "create database" in {

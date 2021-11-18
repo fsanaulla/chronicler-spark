@@ -17,17 +17,15 @@
 package com.github.fsanaulla.chronicler.spark.rdd
 
 import com.github.fsanaulla.chronicler.core.alias.ErrorOr
-import com.github.fsanaulla.chronicler.core.model.InfluxCredentials
+import com.github.fsanaulla.chronicler.core.auth.InfluxCredentials
 import com.github.fsanaulla.chronicler.core.model.InfluxWriter
 import com.github.fsanaulla.chronicler.spark.testing.BaseSpec
 import com.github.fsanaulla.chronicler.spark.testing.DockerizedInfluxDB
 import com.github.fsanaulla.chronicler.spark.testing.Entity
 import com.github.fsanaulla.chronicler.spark.testing.SparkContextBase
-import com.github.fsanaulla.chronicler.urlhttp.io.InfluxIO
-import com.github.fsanaulla.chronicler.urlhttp.io.UrlIOClient
-import com.github.fsanaulla.chronicler.urlhttp.management.InfluxMng
-import com.github.fsanaulla.chronicler.urlhttp.management.UrlManagementClient
-import com.github.fsanaulla.chronicler.urlhttp.shared.InfluxConfig
+import com.github.fsanaulla.chronicler.sync.io.InfluxIO
+import com.github.fsanaulla.chronicler.sync.management.InfluxMng
+import com.github.fsanaulla.chronicler.sync.shared.InfluxConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.scalatest.BeforeAndAfterAll
@@ -56,10 +54,10 @@ class SparkRddDBSpec
   val meas = "meas"
 
   implicit lazy val influxConf: InfluxConfig =
-    InfluxConfig(host, port, Some(InfluxCredentials("admin", "password")))
+    InfluxConfig(host, port, Some(InfluxCredentials.Basic("admin", "password")))
 
-  lazy val mng: UrlManagementClient = InfluxMng(influxConf)
-  lazy val io: UrlIOClient          = InfluxIO(influxConf)
+  lazy val mng = InfluxMng(influxConf)
+  lazy val io  = InfluxIO(influxConf)
 
   "Influx" - {
     "create database" in {
