@@ -5,7 +5,7 @@ object Library {
   object Versions {
     val chronicler = "0.7.0"
     val spark      = "2.4.7"
-    val scalaTest  = "3.2.8"
+    val scalaTest  = "3.2.10"
     val scalaCheck = "1.14.0"
   }
 
