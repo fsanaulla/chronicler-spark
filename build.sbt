@@ -8,8 +8,8 @@ val scala211 = "2.11.12"
 
 ThisBuild / scalaVersion := scala212
 ThisBuild / organization := "com.github.fsanaulla"
-ThisBuild / description := "InfluxDB connector to Apache Spark on top of Chronicler "
-ThisBuild / homepage := Some(url(s"${Owner.github}/${Owner.projectName}"))
+ThisBuild / description  := "InfluxDB connector to Apache Spark on top of Chronicler "
+ThisBuild / homepage     := Some(url(s"${Owner.github}/${Owner.projectName}"))
 ThisBuild / developers += Developer(
   id = Owner.id,
   name = Owner.name,
@@ -32,8 +32,8 @@ ThisBuild / sonatypeProjectHosting := Some(
 ThisBuild / licenses := Seq(
   "APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")
 )
-ThisBuild / pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
-ThisBuild / publishMavenStyle := true
+ThisBuild / pgpPassphrase            := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray)
+ThisBuild / publishMavenStyle        := true
 ThisBuild / Test / parallelExecution := false
 
 lazy val `chronicler-spark` = project
@@ -45,9 +45,8 @@ lazy val `chronicler-spark` = project
   .aggregate(
     Seq(core, sparkRdd, sparkDs, sparkStreaming, sparkStructuredStreaming, testing)
       .flatMap(_.projectRefs): _*
-  )  
+  )
   .enablePlugins(ScalafmtPlugin)
-
 
 lazy val core = projectMatrix
   .in(file("modules/core"))
@@ -130,6 +129,6 @@ lazy val testing = projectMatrix
 
 def license: Project => Project =
   _.settings(
-    startYear := Some(2021),
+    startYear     := Some(2021),
     headerLicense := Some(HeaderLicense.ALv2("2021", Owner.name))
   ).enablePlugins(AutomateHeaderPlugin)
