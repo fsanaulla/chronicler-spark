@@ -6,7 +6,7 @@ object Library {
     val chronicler = "0.7.2"
     val spark      = "2.4.7"
     val scalaTest  = "3.2.8"
-    val scalaCheck = "1.14.0"
+    val scalaCheck = "1.14.3"
   }
 
   val chroniclerCore = "com.github.fsanaulla" %% "chronicler-core-shared"    % Versions.chronicler
