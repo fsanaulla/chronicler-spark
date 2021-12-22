@@ -3,10 +3,10 @@ import sbt._
 object Library {
 
   object Versions {
-    val chronicler = "0.7.0"
+    val chronicler = "0.7.2"
     val spark      = "2.4.7"
-    val scalaTest  = "3.2.10"
-    val scalaCheck = "1.14.0"
+    val scalaTest  = "3.2.8"
+    val scalaCheck = "1.14.3"
   }
 
   val chroniclerCore = "com.github.fsanaulla" %% "chronicler-core-shared"    % Versions.chronicler
@@ -32,7 +32,7 @@ object Library {
   ).map(_ % Versions.scalaTest)
 
   val itTesting: List[ModuleID] = List(
-    "com.dimafeng" %% "testcontainers-scala" % "0.39.5",
+    "com.dimafeng" %% "testcontainers-scala" % "0.39.12",
     scalaCheck,
     generators,
     macros,
