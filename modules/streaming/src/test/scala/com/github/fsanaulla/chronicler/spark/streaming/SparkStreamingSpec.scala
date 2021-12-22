@@ -52,7 +52,7 @@ class SparkStreamingSpec
     InfluxConfig(host, port, Some(InfluxCredentials.Basic("admin", "password")))
 
   lazy val mng = InfluxMng(influxConf)
-  lazy val io          = InfluxIO(influxConf)
+  lazy val io  = InfluxIO(influxConf)
 
   "Influx" - {
     "create database" in {
