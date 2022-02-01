@@ -32,7 +32,7 @@ object Library {
   ).map(_ % Versions.scalaTest)
 
   val itTesting: List[ModuleID] = List(
-    "com.dimafeng" %% "testcontainers-scala" % "0.39.12",
+    "com.dimafeng" %% "testcontainers-scala" % "0.40.0",
     scalaCheck,
     generators,
     macros,
