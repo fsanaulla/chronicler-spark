@@ -3,7 +3,7 @@ import xerial.sbt.Sonatype._
 
 lazy val headerSettings = headerLicense := Some(License.ALv2("2018-2021", "Faiaz Sanaulla"))
 
-val scala212 = "2.12.15"
+val scala212 = "2.12.18"
 val scala211 = "2.11.12"
 
 ThisBuild / scalaVersion := scala212
